@@ -1,0 +1,20 @@
+{
+  "name": "avatar-app",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "shadow-cljs watch app",
+    "build": "shadow-cljs release app",
+    "preview": "npx http-server target/shadow/app -p 8080",
+    "shadow:watch": "shadow-cljs watch app",
+    "shadow:release": "shadow-cljs release app"
+  },
+  "dependencies": {
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
+  },
+  "devDependencies": {
+    "shadow-cljs": "^3.3.6"
+  }
+}
