@@ -83,7 +83,7 @@
         skin-hex (get cfg/skin-tones (:skin head))
         shape    (:shape head)
         render-fn (get-in head-registry [shape :render] head-average)]
-    [:svg {:viewBox "0 0 512 512" :width 200 :height 200}
+    [:svg {:viewBox "0 0 512 512" } ;; :width 200 :height 200
      [:g {:transform (str "translate(" (:head/cx cfg/geometry) " "
                           (:head/cy cfg/geometry) ") "
                           "scale(" (:head/scale cfg/geometry) ")")}
