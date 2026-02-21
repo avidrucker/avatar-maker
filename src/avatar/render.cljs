@@ -84,9 +84,9 @@
         shape    (:shape head)
         render-fn (get-in head-registry [shape :render] head-average)]
     [:svg {:viewBox "0 0 512 512" :width 200 :height 200}
-     [:g {:transform (str "translate(" (:head/cx cfg/constants) " "
-                          (:head/cy cfg/constants) ") "
-                          "scale(" (:head/scale cfg/constants) ")")}
+     [:g {:transform (str "translate(" (:head/cx cfg/geometry) " "
+                          (:head/cy cfg/geometry) ") "
+                          "scale(" (:head/scale cfg/geometry) ")")}
       ;; optional but nice: key the rendered head by shape so React swaps cleanly
       ^{:key (name shape)}
       [render-fn {:skin skin-hex}]]]))
