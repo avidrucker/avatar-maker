@@ -121,10 +121,9 @@
       [:div {:style {:display "grid"
                      :grid-template-columns "repeat(3, 68px)"
                      :gap feature-button-gap}}
-       ;; IMPORTANT: realize the seq so Reagent doesn’t complain about derefs in lazy seqs
        (doall
-         (for [[k {:keys [label]}] (:items paged)]
-           (head-shape-button spec k label)))]]))
+        (for [[k {:keys [label]}] (:items paged)]
+          (head-shape-button spec k label)))]])])
 
 ;; -------------------------
 ;; Feature category tabs
