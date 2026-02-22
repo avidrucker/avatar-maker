@@ -302,6 +302,74 @@
    [:path {:d "M44 44.4999C57.5 35 73.5 39.5 83 51.4999C68.388 46.1004 60.2547 43.7399 47 53.4999C26 65.5 11 63 9 57.9999C10.5 47.5 23 57.9999 44 44.4999Z"}]))
 
 ;; -------------------------
+;; Nose renderers
+;; -------------------------
+
+(defn nose-root
+  "Center a normalized 100x100 nose asset at (0,0)."
+  [& children]
+  [:g {:transform "translate(-50 -50)"} children])
+
+(defn make-nose
+  [{:keys [path]}]
+  (fn nose-renderer [{:keys [stroke fill]}]
+    (nose-root
+     [:path {:d path
+             :fill (or fill "none")
+             :stroke (or stroke "black")
+             :stroke-width (:nose/stroke-width cfg/geometry)
+             :vector-effect "non-scaling-stroke"}])))
+
+(defn nose-none [_]
+  nil)
+
+(def nose-one
+  (make-nose
+   {:path "M52 32C52 45 42 51 42 62C42 73 56 73 56 73"}))
+
+(def nose-two
+  (make-nose
+   {:path "M26 52C40 69 59 69 74 52"}))
+
+(def nose-three
+  (make-nose
+   {:path "M25 57C41 87 59 87 75 57"}))
+
+(def nose-four
+  (make-nose
+   {:path "M40.0001 22C40.6375 43.1992 39.1448 51.8232 33.0001 61C32.5757 69.3167 35.7176 72.7345 49.0001 76C67.5508 70.562 68.4456 64.891 60.0001 52"}))
+
+(def nose-five
+  (make-nose
+   {:path "M29.122 38C12.8195 48.6959 23.9998 59 29.9999 62C35.9999 65 63.323 65 69.1615 62C74.9999 59 87.1336 49.635 69.1615 38"}))
+
+(def nose-six
+  (make-nose
+   {:path "M26 58C35 34 66 35 73 58"}))
+
+(def nose-seven
+  (make-nose
+   {:path "M41.9999 23C35.0782 44.1875 29.2879 56.5247 41.9999 73C48.6404 75.0677 52.3593 74.9407 58.9999 73C69.653 58.3905 66.6306 46.0478 58.9999 23"}))
+
+(def nose-eight
+  (make-nose {:path "M40.0002 23V57C40.0002 57 34.5994 54.9053 31.0002 55C27.781 55.0847 26.3365 56.5212 25.0001 59C22.3661 63.8856 34.0002 70 34.0002 70C34.0002 70 43.3282 75.87 50.0002 76C57.0392 76.1371 67.0002 70 67.0002 70C67.0002 70 77.4837 63.6953 75.0001 59C73.6833 56.5107 72.2195 55.0847 69.0002 55C65.401 54.9053 60.0002 57 60.0002 57V23"}))
+
+(def nose-nine
+  (make-nose {:path "M22 41C22 41 21.6999 49.0107 25 52C28.236 54.9312 36 54 36 54C36 54 42 63 50 63C58 63 63 54 63 54C63 54 71.542 55.2578 75 52C78.2409 48.9467 78 41 78 41"}))
+
+(def nose-ten
+  (make-nose {:path "M42 31C37 43 30 50 30 61C30 72 64 69 64 69"}))
+
+(def nose-eleven
+  (make-nose {:path "M30.1666 43C22.4157 56.0388 33.2178 68.6 39.0148 72.2571C44.8118 75.9143 55.2103 75.9143 60.8512 72.2571C66.4921 68.6 78.2151 57.1836 68.8512 43"}))
+
+(def nose-twelve
+  (make-nose {:path "M30 22C24.0327 44.888 23.2572 56.2794 28 69C32.7427 81.7206 68.3246 81.5541 72 69C75.6755 56.4459 77.8109 46.8374 70 22"}))
+
+(def nose-thirteen
+  (make-nose {:path "M36.9999 23.9999C36.9999 23.9999 31.4289 41.6326 32.2151 45.9999C11.9999 63 36.9999 69.8181 36.9999 69.8181C36.9999 69.8181 41.8921 77 50 77C58.1078 77 62 69.8181 62 69.8181C62 69.8181 89.9999 62 67.1481 45.9999C68.957 40.7576 62.8569 23.9999 62.8569 23.9999"}))
+
+;; -------------------------
 ;; Feature registry
 ;; -------------------------
 
@@ -332,10 +400,27 @@
      :008 {:label "008" :render eye-008 :order 8}
      :009 {:label "009" :render eye-009 :order 9}}}
 
-   ;; Keep placeholders for non-migrated features so normalization and
-   ;; renderer resolution can still be defensive. 
+   :nose
+   {:default :one
+    :shapes
+    {:none {:label "None" :render nose-none :order 0}
+     :one {:label "One" :render nose-one :order 1}
+     :two {:label "Two" :render nose-two :order 2}
+     :three {:label "Three" :render nose-three :order 3}
+     :four {:label "Four" :render nose-four :order 4}
+     :five {:label "Five" :render nose-five :order 5}
+     :six {:label "Six" :render nose-six :order 6}
+     :seven {:label "Seven" :render nose-seven :order 7}
+     :eight {:label "Eight" :render nose-eight :order 8}
+     :nine {:label "Nine" :render nose-nine :order 9}
+     :ten {:label "Ten" :render nose-ten :order 10}
+     :eleven {:label "Eleven" :render nose-eleven :order 11}
+     :twelve {:label "Twelve" :render nose-twelve :order 12}
+     :thirteen {:label "Thirteen" :render nose-thirteen :order 13}}}
 
-   :nose {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}
+   ;; Keep placeholders for non-migrated features so normalization and
+   ;; renderer resolution can still be defensive.  
+   
    :ears {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}
    :mouth {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}
    :brows
@@ -405,7 +490,12 @@
       (update-in [:parts :eyes :iris] ->color-kw)
       (update-in [:parts :hair :color] ->color-kw)
       (update-in [:parts :brows :color] ->color-kw)
-      
+
+      ;; ensure defaults  (treat nil as missing) 
+      (update-in [:parts :nose :stroke] #(or % "black"))
+      (update-in [:parts :nose :size] #(or % 1.0))
+      (update-in [:parts :nose :y-offset] #(or % 0))
+
       (update-in [:parts :head :skin]
                  #(if (contains? cfg/skin-tones %)
                     %
@@ -414,13 +504,13 @@
                  #(if (contains? cfg/hair-colors %)
                     %
                     :jet-black))
-      (update-in [:parts :brows] 
+      (update-in [:parts :brows]
                  #(or % {:shape :none :color :jet-black :size 1.0 :x-offset 0 :y-offset 0 :rotation 0}))
       (update-in [:parts :brows :color]
                  #(if (contains? cfg/hair-colors %)
                     %
                     :jet-black))
-      
+
       (update-in [:parts :eyes :iris]
                  #(if (contains? cfg/iris-colors %)
                     %
@@ -428,10 +518,8 @@
       (update-in [:parts :eyes :spacing] #(or % 0.54))
       (update-in [:parts :eyes :size] #(or % 1.1))
       (update-in [:parts :eyes :y-offset] #(or % 0))
-      
-      (update-in [:parts :eyes :rotation] #(or % 0))
 
-      ))
+      (update-in [:parts :eyes :rotation] #(or % 0))))
 
 (defn clamp
   [mn mx v]
@@ -479,7 +567,21 @@
 
 (defn ears-svg [_ears _head] nil)
 (defn mouth-svg [_mouth] nil)
-(defn nose-svg [_nose _head] nil)
+(defn nose-svg [{:keys [shape stroke size y-offset]} _head]
+  (when (not= shape :none)
+    (let [renderer (resolve-renderer :nose shape)
+          base-scale (:nose/scale cfg/geometry)
+          user-scale (clamp-cfg :nose/size (or size 1.0))
+          final-scale (* base-scale user-scale)
+          base-y (:nose/base-y cfg/geometry)
+          user-y (clamp-cfg :nose/y-offset (or y-offset 0))
+          final-y (+ base-y user-y)
+          cx (:head/cx cfg/geometry)]
+      [:g {:transform
+           (str "translate(" cx " " final-y ") "
+                "scale(" final-scale ")")}
+       (renderer {:stroke (or stroke "black")
+                  :fill "none"})])))
 (defn eyes-svg [{:keys [spacing size y-offset iris shape rotation]}]
   (let [s (clamp-cfg :eyes/spacing (or spacing 0.54))
         sc (clamp-cfg :eyes/size (or size 1.1))

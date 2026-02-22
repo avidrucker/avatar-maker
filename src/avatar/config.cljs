@@ -118,4 +118,5 @@
            :eyes {:spacing 0.54 :size 1.1 :y-offset 0 :rotation 0 :shape :001 :iris :black}
            :hair {:shape :bald :color :jet-black}
            :brows {:shape :none :color :jet-black :size 1.0 :x-offset 0 :y-offset 0 :rotation 0}
+           :nose {:shape :one :stroke "black" :size 1 :y-offset -5}
            }})

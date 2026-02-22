@@ -422,6 +422,65 @@
                  :icon (icons/btn-move-apart color)
                  :on-click #(nudge! [:parts :eyes :spacing] dx)}]]]))
 
+(defn nose-preview-svg [shape]
+  (let [nose-fn (render/resolve-renderer :nose shape)]
+    [:svg {:viewBox "0 0 100 100"
+           :width 48
+           :height 48}
+     [:g {:transform "translate(50 50)"}
+      (nose-fn {:stroke "black" :fill "none"})]]))
+
+(defn nose-shape-button [spec shape label]
+  (let [selected? (= (get-in spec [:parts :nose :shape]) shape)]
+    ^{:key (name shape)}
+    [:button
+     {:title label
+      :style {:display "flex"
+              :align-items "center"
+              :justify-content "center"
+              :width 68
+              :height 68
+              :padding 6
+              :border (if selected? "2px solid #333" "1px solid #ccc")
+              :background "#fff"
+              :border-radius 10
+              :cursor "pointer"}
+      :on-click #(swap! db/!spec assoc-in [:parts :nose :shape] shape)}
+     (nose-preview-svg shape)]))
+
+(defn nose-shape-panel [spec]
+  [:div
+   (let [entries (vec (render/sorted-shape-entries :nose))
+         paged (paginate entries (page-get :shape/nose) 9)]
+     [:<>
+      [pager :shape/nose (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(3, 68px)"
+                     :gap feature-button-gap}}
+       (doall
+        (for [[k {:keys [label]}] (:items paged)]
+          (nose-shape-button spec k label)))]] )])
+
+(defn nose-nudge-controls []
+  (let [color "black"
+        dy (step-of :nose/y-offset)
+        ds (step-of :nose/size)]
+    [:div {:style {:display "grid" :gap 0 :margin "8px 0 12px"}}
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Nose up"
+                 :icon (icons/btn-move-up color)
+                 :on-click #(nudge! [:parts :nose :y-offset] (- dy))}]
+      [icon-btn {:title "Nose down"
+                 :icon (icons/btn-move-down color)
+                 :on-click #(nudge! [:parts :nose :y-offset] dy)}]]
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Nose bigger"
+                 :icon (icons/btn-scale-up color)
+                 :on-click #(nudge! [:parts :nose :size] ds)}]
+      [icon-btn {:title "Nose smaller"
+                 :icon (icons/btn-scale-down color)
+                 :on-click #(nudge! [:parts :nose :size] (- ds))}]]]))
+
 (defn brows-shape-panel [spec]
   [:div
    ;; [:div {:style {:font-size 12 :margin "12px 0 6px"}} "Brow Shape"]
@@ -505,7 +564,8 @@
     :eyes  {:shape [eye-shape-panel spec]
             :swatches [eye-swatch-panel spec]
             :nudge [eyes-nudge-controls]}
-    :nose  {:shape [:div "Nose controls (coming soon)"]}
+    :nose  {:shape [nose-shape-panel spec]
+            :nudge [nose-nudge-controls]}
     :mouth {:shape [:div "Mouth controls (coming soon)"]}
     :other {:shape [:div "Other controls (coming soon)"]}
     {:shape [:div "Select a feature"]}))
