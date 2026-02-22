@@ -39,9 +39,29 @@
    :deep-brown "#A4471A"
    :dark-espresso "#4D3411"})
 
+(def hair-colors-ordered
+  "Natural hair colors."
+  [;; Top row (dark -> lighter browns)
+   {:key :jet-black :label "Jet Black" :hex "#373633"}
+   {:key :espresso :label "Espresso" :hex "#594432"}
+   {:key :mahogany :label "Mahogany" :hex "#764931"}
+   {:key :chestnut :label "Chestnut" :hex "#8E603E"}
+   ;; Bottom row (grays -> lighter tones)
+   {:key :steel-gray :label "Steel Gray" :hex "#919294"}
+   {:key :dark-brown :label "Dark Brown" :hex "#675537"}
+   {:key :medium-brown :label "Medium Brown" :hex "#997A41"}
+   {:key :sandy-blonde :label "Sandy Blonde" :hex "#CFB87E"}])
+
+(def hair-swatches
+  "Swatches preserve display order."
+  hair-colors-ordered)
+
+(def hair-colors
+  (into {} (map (fn [{:keys [key hex]}] [key hex]) hair-colors-ordered)))
+
 (def default-spec
   {:version 15
    :parts {:head {:shape :average :skin :tan}
            :eyes {:spacing 0.54 :size 1.1 :shape :001 :iris :black}
-           ;; ... add other defaults
+           :hair {:shape :bald :color :jet-black}
            }})

@@ -3,38 +3,38 @@
 
 (defn with-keys
   "Given a seq of hiccup nodes, attach stable React keys.
-   If a node already has :key in attrs or ^{:key ...} metadata, we leave it alone."
+   If a node already has :key in attrs or ^{:key ...} metadata, leave it alone."
   [nodes]
   (->> nodes
        (map-indexed
         (fn [i node]
           (cond
             (nil? node) nil
-
-            ;; already has a key via metadata
             (-> node meta :key) node
-
-            ;; already has a key via attrs map
             (and (vector? node)
                  (map? (nth node 1 nil))
                  (contains? (nth node 1) :key))
             node
-
-            ;; otherwise attach a key
             :else
             (with-meta node {:key (str "k" i)}))))
        (remove nil?)))
 
 (defn head-root
-  "Wrap head geometry in a group centered on the avatar coordinate system.
-   Also auto-keys all children so React doesn't warn when multiple siblings exist."
+  "Wrap geometry in a group centered on a normalized 100x100 asset space."
+  [& children]
+  (into
+   [:g {:transform "translate(-50 -50)"}]
+   (with-keys children)))
+
+(defn hair-root
+  "Center a normalized 100x100 hair asset at (0,0)."
   [& children]
   (into
    [:g {:transform "translate(-50 -50)"}]
    (with-keys children)))
 
 ;; -------------------------
-;; Individual Head Renderers
+;; Head renderers
 ;; -------------------------
 
 (defn head-average [{:keys [skin]}]
@@ -73,15 +73,190 @@
   "Controls display order in the UI."
   [:average :blocky :oval :pointy :egg])
 
-(defn avatar->hiccup [spec]
-  (let [{:keys [head]} (:parts spec)
-        skin-hex (get cfg/skin-tones (:skin head))
-        shape    (:shape head)
-        render-fn (get-in head-registry [shape :render] head-average)]
-    [:svg {:viewBox "0 0 512 512" } ;; :width 200 :height 200
-     [:g {:transform (str "translate(" (:head/cx cfg/geometry) " "
-                          (:head/cy cfg/geometry) ") "
-                          "scale(" (:head/scale cfg/geometry) ")")}
-      ;; optional but nice: key the rendered head by shape so React swaps cleanly
-      ^{:key (name shape)}
-      [render-fn {:skin skin-hex}]]]))
+;; -------------------------
+;; Hair renderers
+;; -------------------------
+
+(defn make-hair
+  [{:keys [front front2 back]}]
+  (fn hair-renderer [{:keys [color]}]
+    {:front
+     (when front
+       (hair-root
+        [:path {:d front :fill color}]))
+
+     :front2
+     (when front2
+       (hair-root
+        [:path {:d front2 :fill color}]))
+
+     :back
+     (when back
+       (hair-root
+        [:path {:d back :fill color}]))}))
+
+(def hair-001
+  (make-hair
+   {:front
+    "M30.5003 44.5L28.0003 56C28.0003 56 21.4767 48 28.0003 31C34.5031 14.0542 65.5072 13.6002 72.0003 31C77.5 49 72.0003 56 72.0003 56L69.0003 44.5L66.5003 48L62.5003 39.5L58.5003 45L53.5003 36.5L49.5003 44.5L45.5003 36.5L41.0003 44.5L37 39.5L33.5003 48L30.5003 44.5Z"}))
+
+(def hair-002
+  (make-hair
+   {:back
+    "M31.0001 76.5L30.0001 79.5C11.0001 60 24.4999 33 31.0001 27 C40.5001 15 59.5 17 69.0001 27 C82.7775 46.8304 83.5 63 69.0001 79.5 L67.5001 76.5L65.5001 79.5 C63.7238 74.9543 62.5313 72.5368 58.5001 69.5 H40.5001 C36.7742 73.0768 35.4795 75.3017 34.0001 79.5 L31.0001 76.5Z"
+
+    :front
+    "M58 20.5 C53.5 34.5 42.0001 50.5 21.5002 63 C20.0001 55 20.5 48 24.0001 38 C34.5 17.5 47.5 17 58 20.5Z"
+
+    :front2
+    "M52 19 C70 19.5 82.5 42.5 78.5 64 L52 19Z"}))
+
+(def hair-bald
+  (make-hair {}))
+
+;; -------------------------
+;; Feature registry
+;; -------------------------
+
+(def feature-registry
+  {:head
+   {:default :average
+    :shapes head-registry}
+
+   :hair
+   {:default :bald
+    :shapes
+    {:bald {:label "Bald" :render hair-bald :order 0}
+     :one {:label "Hair 001" :render hair-001 :order 1}
+     :two {:label "Hair 002" :render hair-002 :order 2}}}
+
+   ;; Keep placeholders for non-migrated features so normalization and
+   ;; renderer resolution can still be defensive.
+   :eyes {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}
+   :nose {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}
+   :ears {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}
+   :mouth {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}
+   :brows {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}})
+
+(defn sorted-shape-entries [feature]
+  (->> (get-in feature-registry [feature :shapes])
+       (sort-by (fn [[_ {:keys [order]}]] (or order 9999)))
+       vec))
+
+(defn resolve-renderer [feature shape]
+  (or (get-in feature-registry [feature :shapes shape :render])
+      (get-in feature-registry [feature :shapes (get-in feature-registry [feature :default]) :render])
+      (fn [_] nil)))
+
+;; -------------------------
+;; Spec normalization
+;; -------------------------
+
+(defn valid-shape?
+  [feature shape]
+  (contains? (get-in feature-registry [feature :shapes]) shape))
+
+(defn ->kw [x]
+  (cond
+    (keyword? x) x
+    (string? x)  (keyword x)
+    :else        nil))
+
+(defn normalize-feature
+  "Fix JSON string -> keyword mismatch, enforce valid shape values, apply defaults defensively."
+  [spec feature]
+  (let [default-shape (get-in feature-registry [feature :default])]
+    (update-in spec [:parts feature]
+               (fn [part]
+                 (let [shape (->kw (:shape part))]
+                   (if (valid-shape? feature shape)
+                     (assoc (or part {}) :shape shape)
+                     (assoc (or part {}) :shape default-shape)))))))
+
+(defn ->color-kw [v]
+  (cond
+    (keyword? v) v
+    (string? v)  (keyword v)
+    :else        nil))
+
+(defn normalize-spec [spec]
+  (-> spec
+      (normalize-feature :eyes)
+      (normalize-feature :head)
+      (normalize-feature :nose)
+      (normalize-feature :ears)
+      (normalize-feature :mouth)
+      (normalize-feature :hair)
+      (normalize-feature :brows)
+      (update-in [:parts :head :skin] ->color-kw)
+      (update-in [:parts :hair :color] ->color-kw)
+      (update-in [:parts :head :skin]
+                 #(if (contains? cfg/skin-tones %)
+                    %
+                    :light-cream))
+      (update-in [:parts :hair :color]
+                 #(if (contains? cfg/hair-colors %)
+                    %
+                    :jet-black))
+      (update-in [:parts :brows] #(or % {:shape :none :size 1.0 :x-offset 0 :y-offset 0 :rotation 0}))))
+
+;; -------------------------
+;; Avatar render pipeline
+;; -------------------------
+
+(defn head-transform []
+  (str "translate(" (:head/cx cfg/geometry) " "
+       (+ (:head/cy cfg/geometry) (:head/y-offset cfg/geometry)) ") "
+       "scale(" (:head/scale cfg/geometry) ")"))
+
+(defn head-svg [{:keys [shape skin]}]
+  (let [renderer (resolve-renderer :head shape)
+        skin-hex (get cfg/skin-tones skin (get cfg/skin-tones :light-cream))]
+    [:g {:transform (head-transform)}
+     [renderer {:skin skin-hex}]]))
+
+(defn hair-svg [{:keys [shape color]}]
+  (let [renderer (resolve-renderer :hair shape)
+        layers   (renderer {:color (get cfg/hair-colors color (get cfg/hair-colors :jet-black))})]
+    {:back
+     (when (:back layers)
+       [:g {:transform (head-transform)}
+        (:back layers)])
+
+     :front
+     (when (:front layers)
+       [:g {:transform (head-transform)}
+        (:front layers)])
+
+     :front2
+     (when (:front2 layers)
+       [:g {:transform (head-transform)}
+        (:front2 layers)])}))
+
+(defn ears-svg [_ears _head] nil)
+(defn mouth-svg [_mouth] nil)
+(defn nose-svg [_nose _head] nil)
+(defn eyes-svg [_eyes] nil)
+(defn brows-svg [_brows _hair] nil)
+(defn glasses-svg [_glasses] nil)
+
+(defn avatar->hiccup
+  "Layering: back hair -> ears -> head -> mouth -> nose -> eyes -> brows -> front hair -> glasses."
+  [spec]
+  (let [spec* (normalize-spec spec)
+        {:keys [head eyes ears mouth nose hair brows]} (:parts spec*)
+        {:keys [back front front2]} (hair-svg hair)]
+    [:svg {:xmlns "http://www.w3.org/2000/svg"
+           :viewBox "0 0 512 512"
+           :width 200
+           :height 200}
+     back
+     (ears-svg ears head)
+     (head-svg head)
+     (mouth-svg mouth)
+     (nose-svg nose head)
+     (eyes-svg eyes)
+     (brows-svg brows hair)
+     front
+     front2
+     (glasses-svg (get-in spec* [:parts :other :glasses]))]))

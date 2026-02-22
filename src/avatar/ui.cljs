@@ -109,6 +109,7 @@
      [k {:label (get-in render/head-registry [k :label] (name k))}])))
 
 (def feature-button-gap 6)
+(def swatch-button-gap 6)
 
 (defn head-controls [spec]
   [:div
@@ -124,6 +125,84 @@
        (doall
         (for [[k {:keys [label]}] (:items paged)]
           (head-shape-button spec k label)))]])])
+
+(defn color-swatch-button
+  [{:keys [selected? swatch on-click]}]
+  [:button
+   {:title (:label swatch)
+    :aria-label (:label swatch)
+    :style {:width 32
+            :height 32
+            :padding 0
+            :border-radius 8
+            :border (if selected? "2px solid #333" "1px solid #ccc")
+            :cursor "pointer"
+            :background (:hex swatch)}
+    :on-click on-click}])
+
+(defn hair-preview-svg
+  "Preview hair style over the currently selected head shape."
+  [spec shape]
+  (let [head-shape (get-in spec [:parts :head :shape])
+        skin-key (get-in spec [:parts :head :skin])
+        color-key (get-in spec [:parts :hair :color])
+        head-fn (render/resolve-renderer :head head-shape)
+        hair-fn (render/resolve-renderer :hair shape)
+        skin-hex (get cfg/skin-tones skin-key)
+        hair-hex (get cfg/hair-colors color-key)
+        layers (hair-fn {:color hair-hex})]
+    [:svg {:viewBox "-50 -50 100 100"
+           :width 48
+           :height 48}
+     (:back layers)
+     [head-fn {:skin skin-hex}]
+     (:front layers)
+     (:front2 layers)]))
+
+(defn hair-controls [spec]
+  (let [selected-shape (get-in spec [:parts :hair :shape])
+        selected-color (get-in spec [:parts :hair :color])]
+    [:div
+     [:div {:style {:font-size 12 :margin-bottom 6}} "Hair Style"]
+     (let [entries (vec (render/sorted-shape-entries :hair))
+           paged (paginate entries (page-get :shape/hair) 9)]
+       [:<>
+        [pager :shape/hair (:pages paged)]
+        [:div {:style {:display "grid"
+                       :grid-template-columns "repeat(3, 68px)"
+                       :gap feature-button-gap}}
+         (doall
+          (for [[k {:keys [label]}] (:items paged)]
+            ^{:key (name k)}
+            [:button
+             {:title label
+              :style {:width 68
+                      :height 68
+                      :border (if (= selected-shape k)
+                                "2px solid #333"
+                                "1px solid #ccc")
+                      :background "#fff"
+                      :border-radius 10
+                      :cursor "pointer"}
+              :on-click #(swap! db/!spec assoc-in [:parts :hair :shape] k)}
+             (hair-preview-svg spec k)]))]])
+
+     [:div {:style {:font-size 12 :margin "16px 0 6px"}} "Hair Color"]
+     (let [paged (paginate cfg/hair-swatches (page-get :swatch/hair) 12)]
+       [:<>
+        [pager :swatch/hair (:pages paged)]
+        [:div {:style {:display "grid"
+                       :grid-template-columns "repeat(6, 32px)"
+                       :gap swatch-button-gap}}
+         (doall
+          (for [swatch (:items paged)]
+            ^{:key (:key swatch)}
+            [color-swatch-button
+             {:selected? (= selected-color (:key swatch))
+              :swatch swatch
+              :on-click #(swap! db/!spec assoc-in
+                                [:parts :hair :color]
+                                (:key swatch))}]))]])]))
 
 ;; -------------------------
 ;; Feature category tabs
@@ -167,7 +246,7 @@
     :head [head-controls spec]
 
     ;; stubs for now — we’ll fill these in as v016 grows
-    :hair  [:div "Hair controls (coming soon)"]
+    :hair  [hair-controls spec]
     :brows [:div "Brow controls (coming soon)"]
     :eyes  [:div "Eye controls (coming soon)"]
     :nose  [:div "Nose controls (coming soon)"]
@@ -206,4 +285,3 @@
 
       [:div {:style {:display "flex" :gap "8px"}}
        [:button {:on-click #(reset! db/!spec cfg/default-spec)} "Reset"]]]]))
-
