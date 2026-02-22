@@ -115,6 +115,140 @@
   (make-hair {}))
 
 ;; -------------------------
+;; Eye renderers
+;; -------------------------
+
+(defn eye-root
+  "Wrap a normalized 100x100 eye SVG so it is centered at (0,0)."
+  [& children]
+  (into
+   [:g {:transform "translate(-50 -50)"}]
+   (with-keys children)))
+
+(defn clip-eyeball
+  [{:keys [clip-id clip-path]} & children]
+  [:<>
+   [:defs
+    [:clipPath {:id clip-id}
+     [:path {:d clip-path}]]]
+   [:g {:clip-path (str "url(#" clip-id ")")}
+    (into [:<>] (with-keys children))]])
+
+(defn make-eye
+  [{:keys [white eyeball outline lids layers]}]
+  (fn eye-renderer [{:keys [iris]}]
+    (let [clip-id (str "eye-clip-" (random-uuid))
+          path (:path white)]
+      (eye-root
+       (when white
+         [:path {:d path :fill "white"}])
+       (when eyeball
+         (if white
+           (clip-eyeball
+            {:clip-id clip-id :clip-path path}
+            [:circle {:cx (:cx eyeball) :cy (:cy eyeball) :r (:r eyeball)
+                      :fill (or iris "#3B5BA5")}]
+            [:circle {:cx (:cx eyeball) :cy (:cy eyeball) :r (:pupil-r eyeball)
+                      :fill "black"}])
+           [:<>
+            [:circle {:cx (:cx eyeball) :cy (:cy eyeball) :r (:r eyeball)
+                      :fill (or iris "#3B5BA5")}]
+            [:circle {:cx (:cx eyeball) :cy (:cy eyeball) :r (:pupil-r eyeball)
+                      :fill "black"}]]))
+       (when outline
+         [:path {:d path
+                 :fill "none"
+                 :stroke (:stroke outline)
+                 :stroke-width (:stroke-width outline)}])
+       (for [{:keys [path fill]} layers]
+         ^{:key path}
+         [:path {:d path :fill (or fill "black")}])
+       (for [{:keys [path fill]} lids]
+         ^{:key path}
+         [:path {:d path :fill (or fill "black")}])))))
+
+(def eye-001
+  (make-eye
+   {:eyeball {:cx 43.6 :cy 53.6 :r 17.6 :pupil-r 11.2}
+    :layers [{:path "M4.27246 50.6373C15.258 35.6327 30.2421 28.9491 44.8389 29.5025C59.358 30.053 73.1435 37.7541 81.8281 50.7808L75.1719 55.2193C67.8565 44.2463 56.3918 37.9472 44.5361 37.4976C32.758 37.051 20.242 42.3676 10.7275 55.3628L4.27246 50.6373Z"
+              :fill "black"}]}))
+
+(def eye-002
+  (make-eye
+   {:eyeball {:cx 41.5 :cy 57.5 :r 22.5 :pupil-r 15}
+    :layers [{:path "M41.8291 24.1266C54.4092 23.7851 66.5306 30.7022 74.3799 44.4206L94.9805 38.151L97.0195 44.8483L77.501 50.7878C78.3654 52.8608 79.1472 55.0513 79.834 57.359L76 58.5006L72.166 59.6413C66.2953 39.9158 53.6101 31.8097 42.0459 32.1237C30.3578 32.4411 17.9844 41.3813 12.8496 59.5866L5.15039 57.4147C11.0156 36.62 25.8923 24.5593 41.8291 24.1266Z"
+              :fill "black"}]}))
+
+(def eye-003
+  (make-eye
+   {:eyeball {:cx 38.6 :cy 53.6 :r 17.6 :pupil-r 11.2}
+    :layers [{:path "M50 20C66.929 21.1543 75.3109 27.2724 78.4619 37.125L85.6592 34.1377L88.0469 38.6982L79.8232 44.2227C80.0157 46.4449 80.0381 48.7974 79.916 51.2715L91.8135 50.4766L91.7695 55.999L79.1963 58.6426C79.1336 59.0919 79.0693 59.5445 79 60H70.5C67.851 45.39 63.05 38 50 36C25.5 36 22.5 45 12.5 66L5 65C10.5 39 23 21 50 20Z"
+              :fill "black"}]}))
+
+(defn eye-004 [{:keys [iris]}]
+  (let [clip-id (str "eye004-" (random-uuid))]
+    (eye-root
+     [:circle {:cx 43 :cy 55 :r 26 :fill "white"}]
+     [:defs
+      [:clipPath {:id clip-id}
+       [:circle {:cx 43 :cy 55 :r 26}]]]
+     [:g {:clip-path (str "url(#" clip-id ")")}
+      [:circle {:cx 37.6 :cy 46.6 :r 21.6 :fill (or iris "#3C06FF")}]
+      [:circle {:cx 37.6 :cy 46.6 :r 13.7455 :fill "black"}]]
+     [:path
+      {:d "M43 21C61.7777 21 77 36.2223 77 55C77 66.2666 71.5181 76.2508 63.0781 82.4375L58.2773 76.0371C64.7747 71.3105 69 63.6496 69 55C69 40.6406 57.3594 29 43 29C28.6406 29 17 40.6406 17 55H9C9 36.2223 24.2223 21 43 21Z"
+       :fill "black"}])))
+
+(defn eye-005 [_]
+  (eye-root
+   [:path
+    {:d "M10.5003 47.5C11.5004 42 25.0004 35.0002 39.0003 36.5C52.8733 37.9864 61.3669 42.466 66.8119 53.4698L85.5003 48L87.0003 53L69.8128 61.1407C70.0494 61.9049 70.279 62.691 70.5003 63.5L64.0003 64.5C55.0003 51.5 44.4389 50.2212 20.0003 55.5C12.3202 56.2201 9.50039 53.0001 10.5003 47.5Z"
+     :fill "black"}]))
+
+(defn eye-006 [{:keys [iris]}]
+  (let [clip-id (str "eye006-" (random-uuid))
+        white-path "M79 58.9997C76 76.9999 21.5 77.9999 13 50.9997C9.7532 41.4998 14.5579 38.7678 20 34.9997C39.1586 32.8073 50.3195 34.5067 71 41.4997C77.6495 45.4972 82 46.9999 79 58.9997Z"]
+    (eye-root
+     [:path {:d white-path :fill "white"}]
+     [:defs
+      [:clipPath {:id clip-id}
+       [:path {:d white-path}]]]
+     [:g {:clip-path (str "url(#" clip-id ")")}
+      [:circle {:cx 41.6 :cy 49.6 :r 19.4 :fill (or iris "#3C06FF")}]
+      [:circle {:cx 41.6 :cy 49.6 :r 12.3455 :fill "black"}]]
+     [:path
+      {:d "M44.9592 33.0022C57.6309 33.0236 68.0118 33.9482 75.0519 38.2342C78.8 40.5161 81.5546 43.7062 83.2216 47.9385C84.8488 52.0696 85.3643 56.9969 85.0509 62.7223L77.0635 62.2852C77.3414 57.2089 76.8331 53.5462 75.7791 50.8702C74.765 48.2955 73.1807 46.4602 70.8918 45.0668C65.9425 42.0539 57.6196 40.9999 44.5003 40.9999C44.1934 40.9999 43.8871 40.9646 43.5884 40.8947C37.7965 39.5391 33.1439 38.7381 29.3916 38.5507C25.6268 38.3627 23.0892 38.8125 21.3211 39.6669C18.19 41.1802 15.8476 44.8572 15.0447 54.8248L7.07005 54.1817C7.90474 43.8199 10.5341 35.9953 17.84 32.4644C21.2904 30.7968 25.3378 30.3386 29.7906 30.561C34.1427 30.7783 39.1901 31.6664 44.9592 33.0022Z"
+       :fill "black"}])))
+
+(defn eye-007 [{:keys [iris mirrored?]}]
+  (eye-root
+   [:circle {:cx 43.6 :cy 55.6 :r 30.4 :fill (or iris "#3C06FF")}]
+   [:circle {:cx 43.6 :cy 55.6 :r 19.3455 :fill "black"}]
+   [:g {:transform
+        (when mirrored?
+          "translate(43.6 0) scale(-1 1) translate(-43.6 0)")}
+    [:path {:d "M52.5 34L56.4775 42.5225L65 46.5L56.4775 50.4775L52.5 59L48.5225 50.4775L40 46.5L48.5225 42.5225L52.5 34Z"
+            :fill "white"}]
+    [:path {:d "M33.5 56L36.8411 63.1589L44 66.5L36.8411 69.8411L33.5 77L30.1589 69.8411L23 66.5L30.1589 63.1589L33.5 56Z"
+            :fill "white"}]]
+   [:path {:d "M82 21L72.5059 31.7324C73.3641 32.7785 74.1655 33.8726 74.9082 35.0088L89.4004 29.8457L91.1562 34.8623L78.2305 41.3398C78.9241 43.0395 79.4968 44.8008 79.9375 46.6143L93.999 46.6104L93.9727 51.9248L80.9482 53.5293C80.982 54.1819 81 54.8389 81 55.5C81 55.6669 80.9953 55.8336 80.9932 56H73.9951C73.9968 55.8668 74 55.7332 74 55.5996C73.9998 38.8103 60.389 25.2002 43.5996 25.2002C26.8105 25.2004 13.2004 38.8104 13.2002 55.5996C13.2002 55.7332 13.2034 55.8668 13.2051 56H6.00684C6.00466 55.8336 6 55.6669 6 55.5C6 34.7893 22.7893 18 43.5 18C52.6414 18 61.0175 21.2727 67.5244 26.708L78.5 17L82 21Z"
+           :fill "black"}]))
+
+(defn eye-008 [_]
+  (eye-root
+   [:path {:d "M62.4997 58.4996L64.4997 52.9996C48.4997 48.5 23.9998 47.5 15.4997 50.4996C6.99997 54 12.4996 59.9996 14.9997 59.9996C26.5 60 40 55 62.4997 58.4996Z"
+           :fill "black"}]
+   [:path {:d "M93.0693 51.001L92.9307 55.999L74.9307 55.499L75.0693 50.501L93.0693 51.001Z"
+           :fill "black"}]
+   [:path {:d "M87.002 72.71L84.998 77.29L68.998 70.29L71.002 65.71L87.002 72.71Z"
+           :fill "black"}]))
+
+(defn eye-009 [_]
+  (eye-root
+   [:path {:d "M63.5977 29.0049L31.835 48H67V55H32.2725L62.7402 72.4639L59.2588 78.5361L18 55V48L60.0039 22.9971L63.5977 29.0049Z"
+           :fill "black"}]))
+
+;; -------------------------
 ;; Brow renderers
 ;; -------------------------
 
@@ -183,9 +317,24 @@
      :one {:label "Hair 001" :render hair-001 :order 1}
      :two {:label "Hair 002" :render hair-002 :order 2}}}
 
+   :eyes
+   {:default :001
+    :shapes
+    {:001 {:label "001" :render eye-001 :order 1}
+     :002 {:label "002" :render eye-002 :order 2}
+     :003 {:label "003" :render eye-003 :order 3}
+   
+     :004 {:label "004" :render eye-004 :order 4}
+     :005 {:label "005" :render eye-005 :order 5}
+     :006 {:label "006" :render eye-006 :order 6}
+   
+     :007 {:label "007" :render eye-007 :order 7}
+     :008 {:label "008" :render eye-008 :order 8}
+     :009 {:label "009" :render eye-009 :order 9}}}
+
    ;; Keep placeholders for non-migrated features so normalization and
-   ;; renderer resolution can still be defensive.
-   :eyes {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}
+   ;; renderer resolution can still be defensive. 
+
    :nose {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}
    :ears {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}
    :mouth {:default :none :shapes {:none {:label "None" :render (fn [_] nil) :order 0}}}
@@ -253,7 +402,9 @@
       (normalize-feature :hair)
       (normalize-feature :brows)
       (update-in [:parts :head :skin] ->color-kw)
+      (update-in [:parts :eyes :iris] ->color-kw)
       (update-in [:parts :hair :color] ->color-kw)
+      
       (update-in [:parts :head :skin]
                  #(if (contains? cfg/skin-tones %)
                     %
@@ -262,7 +413,20 @@
                  #(if (contains? cfg/hair-colors %)
                     %
                     :jet-black))
-      (update-in [:parts :brows] #(or % {:shape :none :size 1.0 :x-offset 0 :y-offset 0 :rotation 0}))))
+      (update-in [:parts :brows] 
+                 #(or % {:shape :none :size 1.0 :x-offset 0 :y-offset 0 :rotation 0}))
+      
+      (update-in [:parts :eyes :iris]
+                 #(if (contains? cfg/iris-colors %)
+                    %
+                    :black))
+      (update-in [:parts :eyes :spacing] #(or % 0.54))
+      (update-in [:parts :eyes :size] #(or % 1.1))
+      (update-in [:parts :eyes :y-offset] #(or % 0))
+      
+      (update-in [:parts :eyes :rotation] #(or % 0))
+
+      ))
 
 (defn clamp
   [mn mx v]
@@ -311,7 +475,28 @@
 (defn ears-svg [_ears _head] nil)
 (defn mouth-svg [_mouth] nil)
 (defn nose-svg [_nose _head] nil)
-(defn eyes-svg [_eyes] nil)
+(defn eyes-svg [{:keys [spacing size y-offset iris shape rotation]}]
+  (let [s (clamp-cfg :eyes/spacing (or spacing 0.54))
+        sc (clamp-cfg :eyes/size (or size 1.1))
+        y (clamp-cfg :eyes/y-offset (or y-offset 0))
+        rot (clamp-cfg :eyes/rotation (or rotation 0))
+        dx (* (:eyes/dx-scale cfg/geometry) s)
+        cy (+ (:eyes/base-y cfg/geometry) y)
+        eye-fn (resolve-renderer :eyes shape)
+        head-cx (:head/cx cfg/geometry)
+        iris-hex (get cfg/iris-colors iris (get cfg/iris-colors :black))]
+    [:g
+     [:g {:transform
+          (str "translate(" (- head-cx dx) " " cy ") "
+               "rotate(" (* -1 rot) ") "
+               "scale(" sc ") "
+               "scale(-1 1)")}
+      (eye-fn {:iris iris-hex :mirrored? true})]
+     [:g {:transform
+          (str "translate(" (+ head-cx dx) " " cy ") "
+               "rotate(" rot ") "
+               "scale(" sc ")")}
+      (eye-fn {:iris iris-hex :mirrored? false})]]))
 (defn brows-svg
   [{:keys [shape size x-offset y-offset rotation]} hair]
   (when (not= shape :none)

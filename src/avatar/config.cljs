@@ -97,10 +97,25 @@
 (def hair-colors
   (into {} (map (fn [{:keys [key hex]}] [key hex]) hair-colors-ordered)))
 
+(def iris-colors-ordered
+  [{:key :black :label "Black" :hex "black"}
+   {:key :blue :label "Blue" :hex "#2C5DC6"}
+   {:key :gray :label "Gray" :hex "#7F838C"}
+   {:key :olive :label "Olive" :hex "#848540"}
+   {:key :brown :label "Brown" :hex "#7A5A4A"}
+   {:key :teal :label "Teal" :hex "#4D8873"}])
+
+(def iris-swatches
+  "Swatches preserve display order."
+  iris-colors-ordered)
+
+(def iris-colors
+  (into {} (map (fn [{:keys [key hex]}] [key hex]) iris-colors-ordered)))
+
 (def default-spec
-  {:version 15
+  {:version 16
    :parts {:head {:shape :average :skin :tan}
-           :eyes {:spacing 0.54 :size 1.1 :shape :001 :iris :black}
+           :eyes {:spacing 0.54 :size 1.1 :y-offset 0 :rotation 0 :shape :001 :iris :black}
            :hair {:shape :bald :color :jet-black}
            :brows {:shape :none :size 1.0 :x-offset 0 :y-offset 0 :rotation 0}
            }})

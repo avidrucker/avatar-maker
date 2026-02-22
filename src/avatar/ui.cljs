@@ -224,8 +224,69 @@
           [color-swatch-button
            {:selected? (= selected-color (:key swatch))
             :swatch swatch
-            :on-click #(swap! db/!spec assoc-in
+           :on-click #(swap! db/!spec assoc-in
                               [:parts :hair :color]
+                              (:key swatch))}]))]]]))
+
+(defn eye-preview-svg [shape iris]
+  (let [eye-fn (render/resolve-renderer :eyes shape)]
+    [:svg {:viewBox "0 0 100 100"
+           :width 48
+           :height 48}
+     [:g {:transform "translate(50 50)"}
+      (eye-fn {:iris (get cfg/iris-colors iris)})]]))
+
+(defn eye-shape-button [spec shape label]
+  (let [selected? (= (get-in spec [:parts :eyes :shape]) shape)
+        iris (get-in spec [:parts :eyes :iris])]
+    ^{:key (name shape)}
+    [:button
+     {:title label
+      :style {:display "flex"
+              :align-items "center"
+              :justify-content "center"
+              :width 68
+              :height 68
+              :padding 6
+              :border (if selected? "2px solid #333" "1px solid #ccc")
+              :background "#fff"
+              :border-radius 10
+              :cursor "pointer"}
+      :on-click #(swap! db/!spec assoc-in [:parts :eyes :shape] shape)}
+     (eye-preview-svg shape iris)]))
+
+(defn eye-shape-panel [spec]
+  (let [entries (vec (render/sorted-shape-entries :eyes))
+        paged (paginate entries (page-get :shape/eyes) 9)]
+    [:div
+     [:div {:style {:font-size 12 :margin-bottom 6}} "Eye Shape"]
+     [:<>
+      [pager :shape/eyes (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(3, 68px)"
+                     :gap feature-button-gap}}
+       (doall
+        (for [[k {:keys [label]}] (:items paged)]
+          (eye-shape-button spec k label)))]]]))
+
+(defn eye-swatch-panel [spec]
+  (let [selected-iris (get-in spec [:parts :eyes :iris])
+        paged (paginate cfg/iris-swatches (page-get :swatch/iris) 12)]
+    [:div
+     [:div {:style {:font-size 12 :margin "0 0 6px"}} "Iris Color"]
+     [:<>
+      [pager :swatch/iris (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(6, 32px)"
+                     :gap swatch-button-gap}}
+       (doall
+        (for [swatch (:items paged)]
+          ^{:key (:key swatch)}
+          [color-swatch-button
+           {:selected? (= selected-iris (:key swatch))
+            :swatch swatch
+            :on-click #(swap! db/!spec assoc-in
+                              [:parts :eyes :iris]
                               (:key swatch))}]))]]]))
 
 (defn step-of [k]
@@ -316,6 +377,42 @@
                  :icon (icons/btn-move-apart color)
                  :on-click #(nudge! [:parts :brows :x-offset] dx)}]]]))
 
+(defn eyes-nudge-controls []
+  (let [color "black"
+        dy (step-of :eyes/y-offset)
+        ds (step-of :eyes/size)
+        dr (step-of :eyes/rotation)
+        dx (step-of :eyes/spacing)]
+    [:div {:style {:display "grid" :gap 0 :margin "8px 0 12px"}}
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Eyes up"
+                 :icon (icons/btn-move-up color)
+                 :on-click #(nudge! [:parts :eyes :y-offset] (- dy))}]
+      [icon-btn {:title "Eyes down"
+                 :icon (icons/btn-move-down color)
+                 :on-click #(nudge! [:parts :eyes :y-offset] dy)}]]
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Eyes bigger"
+                 :icon (icons/btn-scale-up color)
+                 :on-click #(nudge! [:parts :eyes :size] ds)}]
+      [icon-btn {:title "Eyes smaller"
+                 :icon (icons/btn-scale-down color)
+                 :on-click #(nudge! [:parts :eyes :size] (- ds))}]]
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Rotate clockwise"
+                 :icon (icons/btn-rotate-clockwise color)
+                 :on-click #(nudge! [:parts :eyes :rotation] dr)}]
+      [icon-btn {:title "Rotate counter-clockwise"
+                 :icon (icons/btn-rotate-counter color)
+                 :on-click #(nudge! [:parts :eyes :rotation] (- dr))}]]
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Move eyes together"
+                 :icon (icons/btn-move-together color)
+                 :on-click #(nudge! [:parts :eyes :spacing] (- dx))}]
+      [icon-btn {:title "Move eyes apart"
+                 :icon (icons/btn-move-apart color)
+                 :on-click #(nudge! [:parts :eyes :spacing] dx)}]]]))
+
 (defn brows-shape-panel [spec]
   [:div
    [:div {:style {:font-size 12 :margin "12px 0 6px"}} "Brow Shape"]
@@ -375,7 +472,9 @@
             :swatches [hair-swatch-panel spec]}
     :brows {:shape [brows-shape-panel spec]
             :nudge [brows-nudge-controls]}
-    :eyes  {:shape [:div "Eye controls (coming soon)"]}
+    :eyes  {:shape [eye-shape-panel spec]
+            :swatches [eye-swatch-panel spec]
+            :nudge [eyes-nudge-controls]}
     :nose  {:shape [:div "Nose controls (coming soon)"]}
     :mouth {:shape [:div "Mouth controls (coming soon)"]}
     :other {:shape [:div "Other controls (coming soon)"]}
