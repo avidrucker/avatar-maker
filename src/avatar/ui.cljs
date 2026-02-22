@@ -115,7 +115,7 @@
 
 (defn head-shape-panel [spec]
   [:div
-   [:div {:style {:font-size 12 :margin-bottom 6}} "Head Shape"]
+   ;; [:div {:style {:font-size 12 :margin-bottom 6}} "Head Shape"]
 
    (let [entries (head-shape-entries)
          paged (paginate entries (page-get :shape/head) 9)]
@@ -132,7 +132,7 @@
   (let [selected-skin (get-in spec [:parts :head :skin])
         paged (paginate cfg/skin-swatches (page-get :swatch/skin) 12)]
     [:div
-     [:div {:style {:font-size 12 :margin "0 0 6px"}} "Skin Tone"]
+     ;; [:div {:style {:font-size 12 :margin "0 0 6px"}} "Skin Tone"]
      [:<>
       [pager :swatch/skin (:pages paged)]
       [:div {:style {:display "grid"
@@ -186,7 +186,7 @@
         entries (vec (render/sorted-shape-entries :hair))
         paged (paginate entries (page-get :shape/hair) 9)]
     [:div
-     [:div {:style {:font-size 12 :margin-bottom 6}} "Hair Style"]
+     ;; [:div {:style {:font-size 12 :margin-bottom 6}} "Hair Style"]
      [:<>
       [pager :shape/hair (:pages paged)]
       [:div {:style {:display "grid"
@@ -212,7 +212,7 @@
   (let [selected-color (get-in spec [:parts :hair :color])
         paged (paginate cfg/hair-swatches (page-get :swatch/hair) 12)]
     [:div
-     [:div {:style {:font-size 12 :margin "0 0 6px"}} "Hair Color"]
+     ;; [:div {:style {:font-size 12 :margin "0 0 6px"}} "Hair Color"]
      [:<>
       [pager :swatch/hair (:pages paged)]
       [:div {:style {:display "grid"
@@ -259,7 +259,7 @@
   (let [entries (vec (render/sorted-shape-entries :eyes))
         paged (paginate entries (page-get :shape/eyes) 9)]
     [:div
-     [:div {:style {:font-size 12 :margin-bottom 6}} "Eye Shape"]
+     ;; [:div {:style {:font-size 12 :margin-bottom 6}} "Eye Shape"]
      [:<>
       [pager :shape/eyes (:pages paged)]
       [:div {:style {:display "grid"
@@ -273,7 +273,7 @@
   (let [selected-iris (get-in spec [:parts :eyes :iris])
         paged (paginate cfg/iris-swatches (page-get :swatch/iris) 12)]
     [:div
-     [:div {:style {:font-size 12 :margin "0 0 6px"}} "Iris Color"]
+     ;; [:div {:style {:font-size 12 :margin "0 0 6px"}} "Iris Color"]
      [:<>
       [pager :swatch/iris (:pages paged)]
       [:div {:style {:display "grid"
@@ -415,7 +415,7 @@
 
 (defn brows-shape-panel [spec]
   [:div
-   [:div {:style {:font-size 12 :margin "12px 0 6px"}} "Brow Shape"]
+   ;; [:div {:style {:font-size 12 :margin "12px 0 6px"}} "Brow Shape"]
    (let [entries (vec (render/sorted-shape-entries :brows))
          paged (paginate entries (page-get :shape/brows) 9)]
      [:<>
@@ -431,7 +431,7 @@
   (let [selected-color (get-in spec [:parts :brows :color])
         paged (paginate cfg/hair-swatches (page-get :swatch/brows) 12)]
     [:div
-     [:div {:style {:font-size 12 :margin "0 0 6px"}} "Brow Color"]
+     ;; [:div {:style {:font-size 12 :margin "0 0 6px"}} "Brow Color"]
      [:<>
       [pager :swatch/brows (:pages paged)]
       [:div {:style {:display "grid"
@@ -507,10 +507,11 @@
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
     [:div
-     {:style {:padding "12px"
+     {:style {;; :padding "12px"
               :border "1px solid #ddd"
               :border-radius "10px"}}
-     [:div {:style {:display "flex" :gap "8px" :flex-wrap "wrap" :margin-bottom "10px"}}
+     [:div {:style {:display "flex" :gap "8px" :flex-wrap "wrap"}}
+      [:button {:on-click #(reset! db/!spec cfg/default-spec)} "Reset"]
       [:button {:on-click #(reset! db/!show-svg? (not show-svg?))}
        (if show-svg? "Hide SVG source" "Show SVG source")]
       [:button {:on-click #(reset! db/!show-edn? (not show-edn?))}
@@ -567,10 +568,11 @@
     [:div
      {:style {:display "grid"
               :gap "12px"
-              :padding "16px"}}
+              ;; :padding "16px"
+              }}
 
      [:div
-      {:style {:padding "12px"
+      {:style {;; :padding "12px"
                :border "1px solid #ddd"
                :border-radius "10px"}}
       [feature-tab-buttons-row]]
@@ -585,9 +587,7 @@
        {:style {:padding "12px"
                 :border "1px solid #ddd"
                 :border-radius "10px"}}
-       [render/avatar->hiccup spec]
-       [:div {:style {:margin-top "12px" :display "flex" :gap "8px"}}
-        [:button {:on-click #(reset! db/!spec cfg/default-spec)} "Reset"]]]
+       [render/avatar->hiccup spec]]
 
       [:div
        {:style {:padding "12px"
