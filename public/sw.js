@@ -1,7 +1,11 @@
 const CACHE = "avatar-cache-v1";
 const ASSETS = [
+  "./",
   "./index.html",
-  "./main.js"
+  "./global.css",
+  "./js/main.js",
+  "./manifest.webmanifest",
+  "./vite.svg"
 ];
 
 self.addEventListener("install", (e) => {
