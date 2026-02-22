@@ -82,7 +82,9 @@
         hex (get cfg/skin-tones skin-key)]
     [:svg {:viewBox "-50 -50 100 100"
            :width 48
-           :height 48}
+           :height 48
+           :preserveAspectRatio "xMidYMid meet"
+           :style {:display "block"}}
      [head-fn {:skin hex}]]))
 
 (defn head-shape-button [spec shape label]
@@ -175,7 +177,9 @@
         layers (hair-fn {:color hair-hex})]
     [:svg {:viewBox "-50 -50 100 100"
            :width 48
-           :height 48}
+           :height 48
+           :preserveAspectRatio "xMidYMid meet"
+           :style {:display "block"}}
      (:back layers)
      [head-fn {:skin skin-hex}]
      (:front layers)
@@ -199,6 +203,10 @@
            {:title label
             :style {:width 68
                     :height 68
+                    :display "flex"
+                    :align-items "center"
+                    :justify-content "center"
+                    :padding 6
                     :border (if (= selected-shape k)
                               "2px solid #333"
                               "1px solid #ccc")
