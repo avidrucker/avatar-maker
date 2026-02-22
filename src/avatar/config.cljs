@@ -112,6 +112,21 @@
 (def iris-colors
   (into {} (map (fn [{:keys [key hex]}] [key hex]) iris-colors-ordered)))
 
+(def lip-colors-ordered
+  [{:key :natural :label "Natural" :hex "#C97A6B"}
+   {:key :rose :label "Rose" :hex "#D46A6A"}
+   {:key :deep-rose :label "Deep Rose" :hex "#A33A3A"}
+   {:key :plum :label "Plum" :hex "#7A3E52"}
+   {:key :brown :label "Brown" :hex "#8A5A4A"}
+   {:key :black :label "Black" :hex "black"}])
+
+(def lip-swatches
+  "Swatches preserve display order."
+  lip-colors-ordered)
+
+(def lip-colors
+  (into {} (map (fn [{:keys [key hex]}] [key hex]) lip-colors-ordered)))
+
 (def default-spec
   {:version 16
    :parts {:head {:shape :average :skin :tan}
@@ -119,4 +134,5 @@
            :hair {:shape :bald :color :jet-black}
            :brows {:shape :none :color :jet-black :size 1.0 :x-offset 0 :y-offset 0 :rotation 0}
            :nose {:shape :one :stroke "black" :size 1 :y-offset -5}
+           :mouth {:shape :twenty :color :black :size 0.94 :y-offset 8}
            }})

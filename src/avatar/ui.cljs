@@ -481,6 +481,86 @@
                  :icon (icons/btn-scale-down color)
                  :on-click #(nudge! [:parts :nose :size] (- ds))}]]]))
 
+(defn mouth-preview-svg [shape lip-key]
+  (let [mouth-fn (render/resolve-renderer :mouth shape)
+        lip-hex (get cfg/lip-colors lip-key)]
+    [:svg {:viewBox "0 0 100 100"
+           :width 48
+           :height 48}
+     [:g {:transform "translate(50 50)"}
+      (mouth-fn {:lip-color lip-hex})]]))
+
+(defn mouth-shape-button [spec shape label]
+  (let [selected? (= (get-in spec [:parts :mouth :shape]) shape)
+        lip (get-in spec [:parts :mouth :color])]
+    ^{:key (name shape)}
+    [:button
+     {:title label
+      :style {:display "flex"
+              :align-items "center"
+              :justify-content "center"
+              :width 68
+              :height 68
+              :padding 6
+              :border (if selected? "2px solid #333" "1px solid #ccc")
+              :background "#fff"
+              :border-radius 10
+              :cursor "pointer"}
+      :on-click #(swap! db/!spec assoc-in [:parts :mouth :shape] shape)}
+     (mouth-preview-svg shape lip)]))
+
+(defn mouth-shape-panel [spec]
+  [:div
+   (let [entries (vec (render/sorted-shape-entries :mouth))
+         paged (paginate entries (page-get :shape/mouth) 9)]
+     [:<>
+      [pager :shape/mouth (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(3, 68px)"
+                     :gap feature-button-gap}}
+       (doall
+        (for [[k {:keys [label]}] (:items paged)]
+          (mouth-shape-button spec k label)))]] )])
+
+(defn mouth-swatch-panel [spec]
+  (let [selected-color (get-in spec [:parts :mouth :color])
+        paged (paginate cfg/lip-swatches (page-get :swatch/lips) 6)]
+    [:div
+     [:<>
+      [pager :swatch/lips (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(3, 32px)"
+                     :gap swatch-button-gap}}
+       (doall
+        (for [swatch (:items paged)]
+          ^{:key (:key swatch)}
+          [color-swatch-button
+           {:selected? (= selected-color (:key swatch))
+            :swatch swatch
+            :on-click #(swap! db/!spec assoc-in
+                              [:parts :mouth :color]
+                              (:key swatch))}]))]]]))
+
+(defn mouth-nudge-controls []
+  (let [color "black"
+        dy (step-of :mouth/y-offset)
+        ds (step-of :mouth/size)]
+    [:div {:style {:display "grid" :gap 0 :margin "8px 0 12px"}}
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Mouth up"
+                 :icon (icons/btn-move-up color)
+                 :on-click #(nudge! [:parts :mouth :y-offset] (- dy))}]
+      [icon-btn {:title "Mouth down"
+                 :icon (icons/btn-move-down color)
+                 :on-click #(nudge! [:parts :mouth :y-offset] dy)}]]
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Mouth bigger"
+                 :icon (icons/btn-scale-up color)
+                 :on-click #(nudge! [:parts :mouth :size] ds)}]
+      [icon-btn {:title "Mouth smaller"
+                 :icon (icons/btn-scale-down color)
+                 :on-click #(nudge! [:parts :mouth :size] (- ds))}]]]))
+
 (defn brows-shape-panel [spec]
   [:div
    ;; [:div {:style {:font-size 12 :margin "12px 0 6px"}} "Brow Shape"]
@@ -566,7 +646,9 @@
             :nudge [eyes-nudge-controls]}
     :nose  {:shape [nose-shape-panel spec]
             :nudge [nose-nudge-controls]}
-    :mouth {:shape [:div "Mouth controls (coming soon)"]}
+    :mouth {:shape [mouth-shape-panel spec]
+            :swatches [mouth-swatch-panel spec]
+            :nudge [mouth-nudge-controls]}
     :other {:shape [:div "Other controls (coming soon)"]}
     {:shape [:div "Select a feature"]}))
 
