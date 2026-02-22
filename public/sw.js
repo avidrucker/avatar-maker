@@ -33,13 +33,18 @@ self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") {
     return;
   }
+  const url = new URL(e.request.url);
+  const isHttp = url.protocol === "http:" || url.protocol === "https:";
+  if (!isHttp) {
+    return;
+  }
 
   e.respondWith(
     fetch(e.request)
       .then((res) => {
         // Keep cache fresh so refresh picks up latest app assets.
         const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy));
+        caches.open(CACHE).then((c) => c.put(e.request, copy).catch(() => null));
         return res;
       })
       .catch(() =>
