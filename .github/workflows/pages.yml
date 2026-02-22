@@ -24,6 +24,12 @@ jobs:
           node-version: "20"
           cache: "npm"
 
+      # ⭐ ADD THIS
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
       - run: npm ci
       - run: npm run build
 
@@ -40,4 +46,3 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-
