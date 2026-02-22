@@ -716,7 +716,7 @@
 (defn main-panel []
   (let [spec @db/!spec
         {:keys [shape swatches nudge]} (active-feature-sections spec)]
-    [:div {:class "pa3 pa4-ns"}
+    [:div {:class "pa2"}
 
      [:div
       {:class "dn db-ns ba b--black-20 br3 pa2 mb3"}
