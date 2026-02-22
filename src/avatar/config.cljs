@@ -1,5 +1,31 @@
 (ns avatar.config)
 
+(def constants
+  "Defines UI constraints used by controls."
+  {:eyes/spacing {:min 0.2 :max 1.0 :step 0.01}
+   :eyes/size {:min 0.5 :max 1.8 :step 0.01}
+   :eyes/y-offset {:min -80 :max 80 :step 1}
+   :eyes/rotation {:min -45 :max 45 :step 1}
+
+   :brows/size {:min 0.5 :max 2.5 :step 0.01}
+   :brows/x-offset {:min -80 :max 80 :step 1}
+   :brows/y-offset {:min -120 :max 120 :step 1}
+   :brows/rotation {:min -45 :max 45 :step 1}
+
+   :nose/size {:min 0.5 :max 2.5 :step 0.01}
+   :nose/y-offset {:min -60 :max 60 :step 1}
+
+   :mouth/size {:min 0.5 :max 2.5 :step 0.01}
+   :mouth/y-offset {:min -80 :max 80 :step 1}
+
+   :glasses/scale {:min 0.5 :max 2.5 :step 0.01}
+   :glasses/y-offset {:min -120 :max 120 :step 1}
+
+   :ears/size {:min 1.0 :max 3.0 :step 0.01}
+   :ears/x-offset {:min -40 :max 40 :step 1}
+   :ears/y-offset {:min 0 :max 80 :step 1}
+   :ears/rotation {:min -45 :max 45 :step 1}})
+
 (def geometry
   {:head/cx 256
    :head/cy 270
@@ -64,4 +90,5 @@
    :parts {:head {:shape :average :skin :tan}
            :eyes {:spacing 0.54 :size 1.1 :shape :001 :iris :black}
            :hair {:shape :bald :color :jet-black}
+           :brows {:shape :none :size 1.0 :x-offset 0 :y-offset 0 :rotation 0}
            }})
