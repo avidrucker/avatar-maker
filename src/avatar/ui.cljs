@@ -112,7 +112,7 @@
 
 (defn head-controls [spec]
   [:div
-   [:div {:style {:font-size 12 :margin-bottom 6}} "Face shape"]
+   [:div {:style {:font-size 12 :margin-bottom 6}} "Head Shape"]
 
    (let [entries (head-shape-entries)
          paged (paginate entries (page-get :shape/head) 9)]
