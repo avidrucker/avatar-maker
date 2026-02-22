@@ -62,17 +62,12 @@
    [:path {:d "M73 46C73 60.3594 62.7025 80 50 80C37.2975 80 27 60.3594 27 46C27 31.6406 37.2975 20 50 20C62.7025 20 73 31.6406 73 46Z"
            :fill skin}]))
 
-
-;; --------------------------------
-;; Registry with labels + renderers
-;; --------------------------------
-
 (def head-registry
-  {:average {:label "Average" :render head-average}
-   :blocky  {:label "Blocky"  :render head-blocky}
-   :oval    {:label "Oval"    :render head-oval}
-   :pointy  {:label "Pointy"  :render head-pointy}
-   :egg     {:label "Egg"     :render head-egg}})
+  {:average {:label "Average" :render head-average :order 0}
+   :blocky  {:label "Blocky"  :render head-blocky  :order 1}
+   :oval    {:label "Oval"    :render head-oval    :order 2}
+   :pointy  {:label "Pointy"  :render head-pointy  :order 3}
+   :egg     {:label "Egg"     :render head-egg     :order 4}})
 
 (def head-order
   "Controls display order in the UI."
