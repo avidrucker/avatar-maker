@@ -204,6 +204,109 @@
                                 [:parts :hair :color]
                                 (:key swatch))}]))]])]))
 
+(defn step-of [k]
+  (or (get-in cfg/constants [k :step]) 1))
+
+(defn nudge!
+  "Increment a numeric spec value by delta."
+  [path delta]
+  (swap! db/!spec update-in path (fnil #(+ % delta) 0)))
+
+(defn icon-btn
+  [{:keys [title on-click selected? icon]}]
+  [:button
+   {:title title
+    :aria-label title
+    :style {:display "flex"
+            :align-items "center"
+            :justify-content "center"
+            :width 48
+            :height 48
+            :border (if selected? "2px solid #333" "1px solid #ccc")
+            :background "#fff"
+            :cursor "pointer"}
+    :on-click on-click}
+   icon])
+
+(defn brow-preview-svg [shape hair-color-key]
+  (let [brow-fn (render/resolve-renderer :brows shape)
+        hex (get cfg/hair-colors hair-color-key)]
+    [:svg {:viewBox "0 0 100 100"
+           :width 48
+           :height 48}
+     [:g {:transform "translate(50 50)"}
+      (brow-fn {:color hex})]]))
+
+(defn brow-shape-button [spec shape label]
+  (let [selected? (= (get-in spec [:parts :brows :shape]) shape)
+        hair-color (get-in spec [:parts :hair :color])]
+    ^{:key (name shape)}
+    [:button
+     {:title label
+      :style {:display "flex"
+              :align-items "center"
+              :justify-content "center"
+              :width 68
+              :height 68
+              :padding 6
+              :border (if selected? "2px solid #333" "1px solid #ccc")
+              :background "#fff"
+              :border-radius 10
+              :cursor "pointer"}
+      :on-click #(swap! db/!spec assoc-in [:parts :brows :shape] shape)}
+     (brow-preview-svg shape hair-color)]))
+
+(defn brows-nudge-controls []
+  (let [color "black"
+        dy (step-of :brows/y-offset)
+        ds (step-of :brows/size)
+        dr (step-of :brows/rotation)
+        dx (step-of :brows/x-offset)]
+    [:div {:style {:display "grid" :gap 0 :margin "8px 0 12px"}}
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Brows up"
+                 :icon (icons/btn-move-up color)
+                 :on-click #(nudge! [:parts :brows :y-offset] (- dy))}]
+      [icon-btn {:title "Brows down"
+                 :icon (icons/btn-move-down color)
+                 :on-click #(nudge! [:parts :brows :y-offset] dy)}]]
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Brows bigger"
+                 :icon (icons/btn-scale-up color)
+                 :on-click #(nudge! [:parts :brows :size] ds)}]
+      [icon-btn {:title "Brows smaller"
+                 :icon (icons/btn-scale-down color)
+                 :on-click #(nudge! [:parts :brows :size] (- ds))}]]
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Rotate clockwise"
+                 :icon (icons/btn-rotate-clockwise color)
+                 :on-click #(nudge! [:parts :brows :rotation] dr)}]
+      [icon-btn {:title "Rotate counter-clockwise"
+                 :icon (icons/btn-rotate-counter color)
+                 :on-click #(nudge! [:parts :brows :rotation] (- dr))}]]
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Move brows together"
+                 :icon (icons/btn-move-together color)
+                 :on-click #(nudge! [:parts :brows :x-offset] (- dx))}]
+      [icon-btn {:title "Move brows apart"
+                 :icon (icons/btn-move-apart color)
+                 :on-click #(nudge! [:parts :brows :x-offset] dx)}]]]))
+
+(defn brows-controls [spec]
+  [:div
+   [brows-nudge-controls]
+   [:div {:style {:font-size 12 :margin "12px 0 6px"}} "Brow Shape"]
+   (let [entries (vec (render/sorted-shape-entries :brows))
+         paged (paginate entries (page-get :shape/brows) 9)]
+     [:<>
+      [pager :shape/brows (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(3, 68px)"
+                     :gap feature-button-gap}}
+       (doall
+        (for [[k {:keys [label]}] (:items paged)]
+          (brow-shape-button spec k label)))]] )])
+
 ;; -------------------------
 ;; Feature category tabs
 ;; -------------------------
@@ -247,7 +350,7 @@
 
     ;; stubs for now — we’ll fill these in as v016 grows
     :hair  [hair-controls spec]
-    :brows [:div "Brow controls (coming soon)"]
+    :brows [brows-controls spec]
     :eyes  [:div "Eye controls (coming soon)"]
     :nose  [:div "Nose controls (coming soon)"]
     :mouth [:div "Mouth controls (coming soon)"]
