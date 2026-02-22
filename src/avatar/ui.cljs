@@ -136,7 +136,7 @@
      [:<>
       [pager :swatch/skin (:pages paged)]
       [:div {:style {:display "grid"
-                     :grid-template-columns "repeat(6, 32px)"
+                     :grid-template-columns "repeat(3, 32px)"
                      :gap swatch-button-gap}}
        (doall
         (for [swatch (:items paged)]
@@ -210,13 +210,13 @@
 
 (defn hair-swatch-panel [spec]
   (let [selected-color (get-in spec [:parts :hair :color])
-        paged (paginate cfg/hair-swatches (page-get :swatch/hair) 12)]
+        paged (paginate cfg/hair-swatches (page-get :swatch/hair) 8)]
     [:div
      ;; [:div {:style {:font-size 12 :margin "0 0 6px"}} "Hair Color"]
      [:<>
       [pager :swatch/hair (:pages paged)]
       [:div {:style {:display "grid"
-                     :grid-template-columns "repeat(6, 32px)"
+                     :grid-template-columns "repeat(4, 32px)"
                      :gap swatch-button-gap}}
        (doall
         (for [swatch (:items paged)]
@@ -271,13 +271,13 @@
 
 (defn eye-swatch-panel [spec]
   (let [selected-iris (get-in spec [:parts :eyes :iris])
-        paged (paginate cfg/iris-swatches (page-get :swatch/iris) 12)]
+        paged (paginate cfg/iris-swatches (page-get :swatch/iris) 6)]
     [:div
      ;; [:div {:style {:font-size 12 :margin "0 0 6px"}} "Iris Color"]
      [:<>
       [pager :swatch/iris (:pages paged)]
       [:div {:style {:display "grid"
-                     :grid-template-columns "repeat(6, 32px)"
+                     :grid-template-columns "repeat(3, 32px)"
                      :gap swatch-button-gap}}
        (doall
         (for [swatch (:items paged)]
@@ -305,13 +305,14 @@
     :style {:display "flex"
             :align-items "center"
             :justify-content "center"
-            :width 48
-            :height 48
+            :width 64
+            :height 64
             :border (if selected? "2px solid #333" "1px solid #ccc")
             :background "#fff"
             :cursor "pointer"}
     :on-click on-click}
-   icon])
+   [:div {:style {:transform "scale(2)"}}
+    icon]])
 
 (defn brow-preview-svg [shape brow-color-key]
   (let [brow-fn (render/resolve-renderer :brows shape)
@@ -429,13 +430,13 @@
 
 (defn brows-swatch-panel [spec]
   (let [selected-color (get-in spec [:parts :brows :color])
-        paged (paginate cfg/hair-swatches (page-get :swatch/brows) 12)]
+        paged (paginate cfg/hair-swatches (page-get :swatch/brows) 8)]
     [:div
      ;; [:div {:style {:font-size 12 :margin "0 0 6px"}} "Brow Color"]
      [:<>
       [pager :swatch/brows (:pages paged)]
       [:div {:style {:display "grid"
-                     :grid-template-columns "repeat(6, 32px)"
+                     :grid-template-columns "repeat(4, 32px)"
                      :gap swatch-button-gap}}
        (doall
         (for [swatch (:items paged)]
