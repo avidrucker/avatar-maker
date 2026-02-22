@@ -126,6 +126,26 @@
         (for [[k {:keys [label]}] (:items paged)]
          (head-shape-button spec k label)))]])])
 
+(defn head-swatch-panel [spec]
+  (let [selected-skin (get-in spec [:parts :head :skin])
+        paged (paginate cfg/skin-swatches (page-get :swatch/skin) 12)]
+    [:div
+     [:div {:style {:font-size 12 :margin "0 0 6px"}} "Skin Tone"]
+     [:<>
+      [pager :swatch/skin (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(6, 32px)"
+                     :gap swatch-button-gap}}
+       (doall
+        (for [swatch (:items paged)]
+          ^{:key (:key swatch)}
+          [color-swatch-button
+           {:selected? (= selected-skin (:key swatch))
+            :swatch swatch
+            :on-click #(swap! db/!spec assoc-in
+                              [:parts :head :skin]
+                              (:key swatch))}]))]]]))
+
 (defn color-swatch-button
   [{:keys [selected? swatch on-click]}]
   [:button
@@ -347,7 +367,8 @@
 
 (defn active-feature-sections [spec]
   (case @db/!active-feature
-    :head  {:shape [head-shape-panel spec]}
+    :head  {:shape [head-shape-panel spec]
+            :swatches [head-swatch-panel spec]}
     :hair  {:shape [hair-shape-panel spec]
             :swatches [hair-swatch-panel spec]}
     :brows {:shape [brows-shape-panel spec]

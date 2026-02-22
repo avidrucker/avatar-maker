@@ -65,6 +65,18 @@
    :deep-brown "#A4471A"
    :dark-espresso "#4D3411"})
 
+(def skin-colors-ordered
+  [{:key :light-cream :label "Light Cream" :hex "#FFE7B5"}
+   {:key :golden :label "Golden" :hex "#FBC24F"}
+   {:key :tan :label "Tan" :hex "#D67B25"}
+   {:key :peach :label "Peach" :hex "#F7B091"}
+   {:key :deep-brown :label "Deep Brown" :hex "#A4471A"}
+   {:key :dark-espresso :label "Dark Espresso" :hex "#4D3411"}])
+
+(def skin-swatches
+  "Swatches preserve display order."
+  skin-colors-ordered)
+
 (def hair-colors-ordered
   "Natural hair colors."
   [;; Top row (dark -> lighter browns)
