@@ -111,7 +111,7 @@
 (def feature-button-gap 6)
 (def swatch-button-gap 6)
 
-(defn head-controls [spec]
+(defn head-shape-panel [spec]
   [:div
    [:div {:style {:font-size 12 :margin-bottom 6}} "Head Shape"]
 
@@ -124,7 +124,7 @@
                      :gap feature-button-gap}}
        (doall
         (for [[k {:keys [label]}] (:items paged)]
-          (head-shape-button spec k label)))]])])
+         (head-shape-button spec k label)))]])])
 
 (defn color-swatch-button
   [{:keys [selected? swatch on-click]}]
@@ -159,50 +159,52 @@
      (:front layers)
      (:front2 layers)]))
 
-(defn hair-controls [spec]
+(defn hair-shape-panel [spec]
   (let [selected-shape (get-in spec [:parts :hair :shape])
-        selected-color (get-in spec [:parts :hair :color])]
+        entries (vec (render/sorted-shape-entries :hair))
+        paged (paginate entries (page-get :shape/hair) 9)]
     [:div
      [:div {:style {:font-size 12 :margin-bottom 6}} "Hair Style"]
-     (let [entries (vec (render/sorted-shape-entries :hair))
-           paged (paginate entries (page-get :shape/hair) 9)]
-       [:<>
-        [pager :shape/hair (:pages paged)]
-        [:div {:style {:display "grid"
-                       :grid-template-columns "repeat(3, 68px)"
-                       :gap feature-button-gap}}
-         (doall
-          (for [[k {:keys [label]}] (:items paged)]
-            ^{:key (name k)}
-            [:button
-             {:title label
-              :style {:width 68
-                      :height 68
-                      :border (if (= selected-shape k)
-                                "2px solid #333"
-                                "1px solid #ccc")
-                      :background "#fff"
-                      :border-radius 10
-                      :cursor "pointer"}
-              :on-click #(swap! db/!spec assoc-in [:parts :hair :shape] k)}
-             (hair-preview-svg spec k)]))]])
+     [:<>
+      [pager :shape/hair (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(3, 68px)"
+                     :gap feature-button-gap}}
+       (doall
+        (for [[k {:keys [label]}] (:items paged)]
+          ^{:key (name k)}
+          [:button
+           {:title label
+            :style {:width 68
+                    :height 68
+                    :border (if (= selected-shape k)
+                              "2px solid #333"
+                              "1px solid #ccc")
+                    :background "#fff"
+                    :border-radius 10
+                    :cursor "pointer"}
+            :on-click #(swap! db/!spec assoc-in [:parts :hair :shape] k)}
+           (hair-preview-svg spec k)]))]]]))
 
-     [:div {:style {:font-size 12 :margin "16px 0 6px"}} "Hair Color"]
-     (let [paged (paginate cfg/hair-swatches (page-get :swatch/hair) 12)]
-       [:<>
-        [pager :swatch/hair (:pages paged)]
-        [:div {:style {:display "grid"
-                       :grid-template-columns "repeat(6, 32px)"
-                       :gap swatch-button-gap}}
-         (doall
-          (for [swatch (:items paged)]
-            ^{:key (:key swatch)}
-            [color-swatch-button
-             {:selected? (= selected-color (:key swatch))
-              :swatch swatch
-              :on-click #(swap! db/!spec assoc-in
-                                [:parts :hair :color]
-                                (:key swatch))}]))]])]))
+(defn hair-swatch-panel [spec]
+  (let [selected-color (get-in spec [:parts :hair :color])
+        paged (paginate cfg/hair-swatches (page-get :swatch/hair) 12)]
+    [:div
+     [:div {:style {:font-size 12 :margin "0 0 6px"}} "Hair Color"]
+     [:<>
+      [pager :swatch/hair (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(6, 32px)"
+                     :gap swatch-button-gap}}
+       (doall
+        (for [swatch (:items paged)]
+          ^{:key (:key swatch)}
+          [color-swatch-button
+           {:selected? (= selected-color (:key swatch))
+            :swatch swatch
+            :on-click #(swap! db/!spec assoc-in
+                              [:parts :hair :color]
+                              (:key swatch))}]))]]]))
 
 (defn step-of [k]
   (or (get-in cfg/constants [k :step]) 1))
@@ -292,9 +294,8 @@
                  :icon (icons/btn-move-apart color)
                  :on-click #(nudge! [:parts :brows :x-offset] dx)}]]]))
 
-(defn brows-controls [spec]
+(defn brows-shape-panel [spec]
   [:div
-   [brows-nudge-controls]
    [:div {:style {:font-size 12 :margin "12px 0 6px"}} "Brow Shape"]
    (let [entries (vec (render/sorted-shape-entries :brows))
          paged (paginate entries (page-get :shape/brows) 9)]
@@ -341,50 +342,66 @@
       (feature-tab-btn tab-btn)))])
 
 ;; -------------------------
-;; Controls panel dispatcher
+;; Feature Sections
 ;; -------------------------
 
-(defn controls-panel [spec]
+(defn active-feature-sections [spec]
   (case @db/!active-feature
-    :head [head-controls spec]
-
-    ;; stubs for now — we’ll fill these in as v016 grows
-    :hair  [hair-controls spec]
-    :brows [brows-controls spec]
-    :eyes  [:div "Eye controls (coming soon)"]
-    :nose  [:div "Nose controls (coming soon)"]
-    :mouth [:div "Mouth controls (coming soon)"]
-    :other [:div "Other controls (coming soon)"]
-
-    [:div "Select a feature"]))
+    :head  {:shape [head-shape-panel spec]}
+    :hair  {:shape [hair-shape-panel spec]
+            :swatches [hair-swatch-panel spec]}
+    :brows {:shape [brows-shape-panel spec]
+            :nudge [brows-nudge-controls]}
+    :eyes  {:shape [:div "Eye controls (coming soon)"]}
+    :nose  {:shape [:div "Nose controls (coming soon)"]}
+    :mouth {:shape [:div "Mouth controls (coming soon)"]}
+    :other {:shape [:div "Other controls (coming soon)"]}
+    {:shape [:div "Select a feature"]}))
 
 ;; -------------------------
 ;; Root UI
 ;; -------------------------
 
 (defn main-panel []
-  (let [spec @db/!spec]
+  (let [spec @db/!spec
+        {:keys [shape swatches nudge]} (active-feature-sections spec)]
     [:div
-     {:style {:display "flex"
-              :gap "10px"
-              :align-items "flex-start"
+     {:style {:display "grid"
+              :gap "12px"
               :padding "16px"}}
 
-     [:div {:style {:flex "0 0 260px"}}
-      [render/avatar->hiccup spec]]
-
      [:div
-      {:style {:flex "1 1 auto"
-               :min-width "320px"
-               :padding "12px"
+      {:style {:padding "12px"
                :border "1px solid #ddd"
                :border-radius "10px"}}
+      [feature-tab-buttons-row]]
 
-      [:div {:style {:margin-bottom "12px"}}
-       [feature-tab-buttons-row]]
+     [:div
+      {:style {:display "grid"
+               :grid-template-columns "260px minmax(0, 1fr)"
+               :gap "12px"
+               :align-items "start"}}
 
-      [:div {:style {:margin-bottom "12px"}}
-       [controls-panel spec]]
+      [:div
+       {:style {:padding "12px"
+                :border "1px solid #ddd"
+                :border-radius "10px"}}
+       [render/avatar->hiccup spec]
+       [:div {:style {:margin-top "12px" :display "flex" :gap "8px"}}
+        [:button {:on-click #(reset! db/!spec cfg/default-spec)} "Reset"]]]
 
-      [:div {:style {:display "flex" :gap "8px"}}
-       [:button {:on-click #(reset! db/!spec cfg/default-spec)} "Reset"]]]]))
+      [:div
+       {:style {:padding "12px"
+                :border "1px solid #ddd"
+                :border-radius "10px"}}
+       [:div
+        {:style {:display "grid"
+                 :grid-template-columns "1fr 1fr"
+                 :gap "16px"
+                 :align-items "start"}}
+        [:div shape]
+        [:div
+         (when swatches
+           [:div {:style {:margin-bottom "12px"}} swatches])
+         (when nudge
+           [:div nudge])]]]]]))
