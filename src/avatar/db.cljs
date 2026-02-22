@@ -8,5 +8,12 @@
 (defonce !active-feature (r/atom :head))
 (defonce !ui-pages (r/atom {}))
 
-;; Constants for storage
+;; Persistent/local storage keys
 (def storage-key "mii-svg-avatar/v016")
+(def show-svg-key "mii-svg-avatar/show-svg")
+
+;; Footer tool state
+(defonce !show-svg? (r/atom false))
+(defonce !show-edn? (r/atom false))
+(defonce !edn-import-text (r/atom ""))
+(defonce !edn-import-error (r/atom nil))

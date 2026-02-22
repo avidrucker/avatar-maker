@@ -1,6 +1,7 @@
 (ns avatar.ui
   (:require [avatar.db :as db]
             [avatar.render :as render]
+            [avatar.storage :as storage]
             [avatar.config :as cfg]
             [avatar.icons :as icons]))
 
@@ -110,6 +111,7 @@
 
 (def feature-button-gap 6)
 (def swatch-button-gap 6)
+(declare color-swatch-button)
 
 (defn head-shape-panel [spec]
   [:div
@@ -379,6 +381,62 @@
     :other {:shape [:div "Other controls (coming soon)"]}
     {:shape [:div "Select a feature"]}))
 
+(defn footer-tools-panel []
+  (let [show-svg? @db/!show-svg?
+        show-edn? @db/!show-edn?
+        svg-source (storage/svg-source)
+        edn-export (storage/edn-export)]
+    [:div
+     {:style {:padding "12px"
+              :border "1px solid #ddd"
+              :border-radius "10px"}}
+     [:div {:style {:display "flex" :gap "8px" :flex-wrap "wrap" :margin-bottom "10px"}}
+      [:button {:on-click #(reset! db/!show-svg? (not show-svg?))}
+       (if show-svg? "Hide SVG source" "Show SVG source")]
+      [:button {:on-click #(reset! db/!show-edn? (not show-edn?))}
+       (if show-edn? "Hide EDN" "Show EDN")]]
+
+     (when show-svg?
+       [:div {:style {:margin-bottom "12px"}}
+        [:div {:style {:font-size 12 :margin-bottom "4px"}} "SVG Export"]
+        [:textarea {:style {:width "100%"
+                            :font-family "monospace"
+                            :font-size "11px"}
+                    :rows 6
+                    :read-only true
+                    :value svg-source}]])
+
+     (when show-edn?
+       [:div
+        [:div {:style {:font-size 12 :margin-bottom "4px"}} "EDN Export"]
+        [:textarea {:style {:width "100%"
+                            :font-family "monospace"
+                            :font-size "11px"}
+                    :rows 6
+                    :read-only true
+                    :value edn-export}]
+
+        [:div {:style {:font-size 12 :margin "10px 0 4px"}} "EDN Import"]
+        [:textarea {:style {:width "100%"
+                            :font-family "monospace"
+                            :font-size "11px"}
+                    :rows 6
+                    :value @db/!edn-import-text
+                    :on-input
+                    (fn [e]
+                      (reset! db/!edn-import-error nil)
+                      (reset! db/!edn-import-text (.. e -target -value)))}]
+
+        [:div {:style {:margin-top "8px"}}
+         [:button {:on-click #(storage/load-edn-into-spec!)}
+          "Load EDN"]]
+
+        (when @db/!edn-import-error
+          [:div {:style {:margin-top "8px"
+                         :color "#a00"
+                         :font-size 12}}
+           @db/!edn-import-error])])]))
+
 ;; -------------------------
 ;; Root UI
 ;; -------------------------
@@ -425,4 +483,6 @@
          (when swatches
            [:div {:style {:margin-bottom "12px"}} swatches])
          (when nudge
-           [:div nudge])]]]]]))
+           [:div nudge])]]]]
+
+     [footer-tools-panel]]))
