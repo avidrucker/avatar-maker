@@ -308,7 +308,9 @@
 (defn nose-root
   "Center a normalized 100x100 nose asset at (0,0)."
   [& children]
-  [:g {:transform "translate(-50 -50)"} children])
+  (into
+   [:g {:transform "translate(-50 -50)"}]
+   (with-keys children)))
 
 (defn make-nose
   [{:keys [path]}]
@@ -375,7 +377,9 @@
 
 (defn mouth-root
   [& children]
-  [:g {:transform "translate(-50 -50)"} children])
+  (into
+   [:g {:transform "translate(-50 -50)"}]
+   (with-keys children)))
 
 (defn make-mouth
   "Create a mouth renderer from declarative layered paths.
@@ -390,6 +394,7 @@
       (mouth-root
 
        (for [{:keys [path role fill]} sorted-layers]
+         ^{:key path}
          [:path
           {:d path
            :fill
