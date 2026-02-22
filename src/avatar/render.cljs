@@ -404,6 +404,7 @@
       (update-in [:parts :head :skin] ->color-kw)
       (update-in [:parts :eyes :iris] ->color-kw)
       (update-in [:parts :hair :color] ->color-kw)
+      (update-in [:parts :brows :color] ->color-kw)
       
       (update-in [:parts :head :skin]
                  #(if (contains? cfg/skin-tones %)
@@ -414,7 +415,11 @@
                     %
                     :jet-black))
       (update-in [:parts :brows] 
-                 #(or % {:shape :none :size 1.0 :x-offset 0 :y-offset 0 :rotation 0}))
+                 #(or % {:shape :none :color :jet-black :size 1.0 :x-offset 0 :y-offset 0 :rotation 0}))
+      (update-in [:parts :brows :color]
+                 #(if (contains? cfg/hair-colors %)
+                    %
+                    :jet-black))
       
       (update-in [:parts :eyes :iris]
                  #(if (contains? cfg/iris-colors %)
@@ -498,7 +503,7 @@
                "scale(" sc ")")}
       (eye-fn {:iris iris-hex :mirrored? false})]]))
 (defn brows-svg
-  [{:keys [shape size x-offset y-offset rotation]} hair]
+  [{:keys [shape color size x-offset y-offset rotation]}]
   (when (not= shape :none)
     (let [sc (clamp-cfg :brows/size (or size 1.0))
           xoff (clamp-cfg :brows/x-offset (or x-offset 0))
@@ -508,7 +513,7 @@
           cy (+ (:brows/base-y cfg/geometry) yoff)
           dx (+ (:brows/base-dx cfg/geometry) xoff)
           brow-fn (resolve-renderer :brows shape)
-          brow-color (get cfg/hair-colors (:color hair) (get cfg/hair-colors :jet-black))]
+          brow-color (get cfg/hair-colors color (get cfg/hair-colors :jet-black))]
       [:g
        [:g {:transform
             (str "translate(" (- head-cx dx) " " cy ") "
@@ -539,7 +544,7 @@
      (mouth-svg mouth)
      (nose-svg nose head)
      (eyes-svg eyes)
-     (brows-svg brows hair)
+     (brows-svg brows)
      front
      front2
      (glasses-svg (get-in spec* [:parts :other :glasses]))]))

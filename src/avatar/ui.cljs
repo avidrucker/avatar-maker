@@ -313,9 +313,9 @@
     :on-click on-click}
    icon])
 
-(defn brow-preview-svg [shape hair-color-key]
+(defn brow-preview-svg [shape brow-color-key]
   (let [brow-fn (render/resolve-renderer :brows shape)
-        hex (get cfg/hair-colors hair-color-key)]
+        hex (get cfg/hair-colors brow-color-key)]
     [:svg {:viewBox "0 0 100 100"
            :width 48
            :height 48}
@@ -324,7 +324,7 @@
 
 (defn brow-shape-button [spec shape label]
   (let [selected? (= (get-in spec [:parts :brows :shape]) shape)
-        hair-color (get-in spec [:parts :hair :color])]
+        brow-color (get-in spec [:parts :brows :color])]
     ^{:key (name shape)}
     [:button
      {:title label
@@ -339,7 +339,7 @@
               :border-radius 10
               :cursor "pointer"}
       :on-click #(swap! db/!spec assoc-in [:parts :brows :shape] shape)}
-     (brow-preview-svg shape hair-color)]))
+     (brow-preview-svg shape brow-color)]))
 
 (defn brows-nudge-controls []
   (let [color "black"
@@ -427,6 +427,26 @@
         (for [[k {:keys [label]}] (:items paged)]
           (brow-shape-button spec k label)))]] )])
 
+(defn brows-swatch-panel [spec]
+  (let [selected-color (get-in spec [:parts :brows :color])
+        paged (paginate cfg/hair-swatches (page-get :swatch/brows) 12)]
+    [:div
+     [:div {:style {:font-size 12 :margin "0 0 6px"}} "Brow Color"]
+     [:<>
+      [pager :swatch/brows (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(6, 32px)"
+                     :gap swatch-button-gap}}
+       (doall
+        (for [swatch (:items paged)]
+          ^{:key (:key swatch)}
+          [color-swatch-button
+           {:selected? (= selected-color (:key swatch))
+            :swatch swatch
+            :on-click #(swap! db/!spec assoc-in
+                              [:parts :brows :color]
+                              (:key swatch))}]))]]]))
+
 ;; -------------------------
 ;; Feature category tabs
 ;; -------------------------
@@ -471,6 +491,7 @@
     :hair  {:shape [hair-shape-panel spec]
             :swatches [hair-swatch-panel spec]}
     :brows {:shape [brows-shape-panel spec]
+            :swatches [brows-swatch-panel spec]
             :nudge [brows-nudge-controls]}
     :eyes  {:shape [eye-shape-panel spec]
             :swatches [eye-swatch-panel spec]
