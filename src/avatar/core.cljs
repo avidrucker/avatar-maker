@@ -16,5 +16,5 @@
   (reset! db/!spec cfg/default-spec)
   (render!))
 
-(defn ^:after-load rerender []
+(defn ^:dev/after-load rerender []
   (render!))
