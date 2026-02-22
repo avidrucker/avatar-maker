@@ -616,14 +616,14 @@
      {:title label
       :aria-label label
       :on-click #(reset! db/!active-feature value)
-      :style {:margin-right "6px"
-              :padding "6px 10px"
+      :class "mr2 mb2"
+      :style {:padding "6px 10px"
               :border (if active? "2px solid blue" "1px solid gray")
               :background (if active? "#eef5ff" "white")}}
      icon]))
 
 (defn feature-tab-buttons-row []
-  [:div
+  [:div {:class "flex flex-wrap"}
    (doall
     (for [tab-btn feature-tab-buttons]
       (feature-tab-btn tab-btn)))])
@@ -658,18 +658,18 @@
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
     [:div
-     {:style {;; :padding "12px"
-              :border "1px solid #ddd"
-              :border-radius "10px"}}
-     [:div {:style {:display "flex" :gap "8px" :flex-wrap "wrap"}}
+     {:class "ba b--black-20 br3 pa3 mt3"}
+     [:div {:class "flex flex-wrap items-center"}
       [:button {:on-click #(reset! db/!spec cfg/default-spec)} "Reset"]
-      [:button {:on-click #(reset! db/!show-svg? (not show-svg?))}
+      [:button {:class "ml2"
+                :on-click #(reset! db/!show-svg? (not show-svg?))}
        (if show-svg? "Hide SVG source" "Show SVG source")]
-      [:button {:on-click #(reset! db/!show-edn? (not show-edn?))}
+      [:button {:class "ml2"
+                :on-click #(reset! db/!show-edn? (not show-edn?))}
        (if show-edn? "Hide EDN" "Show EDN")]]
 
      (when show-svg?
-       [:div {:style {:margin-bottom "12px"}}
+       [:div {:class "mt3 mb3"}
         [:div {:style {:font-size 12 :margin-bottom "4px"}} "SVG Export"]
         [:textarea {:style {:width "100%"
                             :font-family "monospace"
@@ -679,7 +679,7 @@
                     :value svg-source}]])
 
      (when show-edn?
-       [:div
+       [:div {:class "mt3"}
         [:div {:style {:font-size 12 :margin-bottom "4px"}} "EDN Export"]
         [:textarea {:style {:width "100%"
                             :font-family "monospace"
@@ -716,43 +716,29 @@
 (defn main-panel []
   (let [spec @db/!spec
         {:keys [shape swatches nudge]} (active-feature-sections spec)]
-    [:div
-     {:style {:display "grid"
-              :gap "12px"
-              ;; :padding "16px"
-              }}
+    [:div {:class "pa3 pa4-ns"}
 
      [:div
-      {:style {;; :padding "12px"
-               :border "1px solid #ddd"
-               :border-radius "10px"}}
+      {:class "dn db-ns ba b--black-20 br3 pa2 mb3"}
       [feature-tab-buttons-row]]
 
      [:div
-      {:style {:display "grid"
-               :grid-template-columns "260px minmax(0, 1fr)"
-               :gap "12px"
-               :align-items "start"}}
+      {:class "flex flex-column flex-row-ns items-start"}
 
       [:div
-       {:style {:padding "12px"
-                :border "1px solid #ddd"
-                :border-radius "10px"}}
-       [render/avatar->hiccup spec]]
+       {:class "w-100 w5-ns ba b--black-20 br3 pa3 mb3 mb0-ns mr3-ns"}
+       [render/avatar->hiccup spec]
+       [:div {:class "db dn-ns mt3"}
+        [feature-tab-buttons-row]]]
 
       [:div
-       {:style {:padding "12px"
-                :border "1px solid #ddd"
-                :border-radius "10px"}}
+       {:class "w-100 flex-auto ba b--black-20 br3 pa3"}
        [:div
-        {:style {:display "grid"
-                 :grid-template-columns "1fr 1fr"
-                 :gap "16px"
-                 :align-items "start"}}
-        [:div shape]
-        [:div
+        {:class "controls-layout"}
+        [:div {:class "shape-pane"} shape]
+        [:div {:class "meta-pane"}
          (when swatches
-           [:div {:style {:margin-bottom "12px"}} swatches])
+           [:div {:class "mb3"} swatches])
          (when nudge
            [:div nudge])]]]]
 

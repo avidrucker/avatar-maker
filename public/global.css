@@ -2,3 +2,37 @@ body {
     padding: 0;
     margin: 0;
 }
+
+.controls-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.shape-pane {
+    order: 2;
+    width: 100%;
+}
+
+.meta-pane {
+    order: 1;
+    width: 100%;
+}
+
+@media screen and (min-width: 30em) {
+    .controls-layout {
+        flex-direction: row;
+    }
+
+    .shape-pane {
+        order: 1;
+        width: 50%;
+        padding-right: 1rem;
+        margin-bottom: 0;
+    }
+
+    .meta-pane {
+        order: 2;
+        width: 50%;
+    }
+}
