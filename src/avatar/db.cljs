@@ -11,6 +11,7 @@
 ;; Persistent/local storage keys
 (def storage-key "mii-svg-avatar/v016")
 (def show-svg-key "mii-svg-avatar/show-svg")
+(def active-feature-key "mii-svg-avatar/active-feature")
 
 ;; Footer tool state
 (defonce !show-svg? (r/atom false))

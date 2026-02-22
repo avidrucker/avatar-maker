@@ -27,6 +27,15 @@
 (defn save-bool! [k v]
   (.setItem js/localStorage k (str (boolean v))))
 
+(defn load-active-feature [default]
+  (let [allowed #{:head :hair :brows :eyes :nose :mouth :other}
+        raw (.getItem js/localStorage db/active-feature-key)
+        kw (when (seq raw) (keyword raw))]
+    (if (contains? allowed kw) kw default)))
+
+(defn save-active-feature! [feature]
+  (.setItem js/localStorage db/active-feature-key (name feature)))
+
 (defn attrs->str [m]
   (->> m
        (map (fn [[k v]]
@@ -105,6 +114,7 @@
   ;; Restore persisted values once per init and keep them synced.
   (reset! db/!spec (or (load-spec) cfg/default-spec))
   (reset! db/!show-svg? (load-bool db/show-svg-key false))
+  (reset! db/!active-feature (load-active-feature :head))
 
   (add-watch db/!spec ::persist-spec
              (fn [_ _ _ new-spec]
@@ -112,4 +122,8 @@
 
   (add-watch db/!show-svg? ::persist-show-svg
              (fn [_ _ _ new-v]
-               (save-bool! db/show-svg-key new-v))))
+               (save-bool! db/show-svg-key new-v)))
+
+  (add-watch db/!active-feature ::persist-active-feature
+             (fn [_ _ _ new-feature]
+               (save-active-feature! new-feature))))
