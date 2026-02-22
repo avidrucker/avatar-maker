@@ -1,11 +1,12 @@
-const CACHE = "avatar-cache-v1";
+const CACHE = "avatar-cache-v2";
 const ASSETS = [
   "./",
   "./index.html",
   "./global.css",
   "./js/main.js",
   "./manifest.webmanifest",
-  "./vite.svg"
+  "./vite.svg",
+  "https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"
 ];
 
 self.addEventListener("install", (e) => {
@@ -29,10 +30,24 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
+  if (e.request.method !== "GET") {
+    return;
+  }
+
   e.respondWith(
-    caches.match(e.request).then((hit) => hit || fetch(e.request).catch(() => {
-      console.warn(`Fetch failed for: ${e.request.url}`);
-      return new Response("Offline");
-    }))
+    fetch(e.request)
+      .then((res) => {
+        // Keep cache fresh so refresh picks up latest app assets.
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy));
+        return res;
+      })
+      .catch(() =>
+        caches.match(e.request).then((hit) => {
+          if (hit) return hit;
+          if (e.request.mode === "navigate") return caches.match("./index.html");
+          return Response.error();
+        })
+      )
   );
 });
