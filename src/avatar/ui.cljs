@@ -300,10 +300,36 @@
 (defn step-of [k]
   (or (get-in cfg/constants [k :step]) 1))
 
+(defn path->cfg-key
+  [path]
+  (let [[_ part attr] path]
+    (when (and (keyword? part) (keyword? attr))
+      (keyword (str (name part) "/" (name attr))))))
+
+(defn decimals-of [n]
+  (let [s (str n)
+        i (.indexOf s ".")]
+    (if (= -1 i) 0 (- (count s) i 1))))
+
+(defn quantize-by-step
+  "Snap value to step precision using integer math, then format back."
+  [value step]
+  (let [d (decimals-of step)
+        scale (js/Math.pow 10 d)
+        scaled (js/Math.round (* value scale))]
+    (js/Number (.toFixed (/ scaled scale) d))))
+
 (defn nudge!
-  "Increment a numeric spec value by delta."
+  "Increment a numeric spec value by delta, clamp, then quantize by step."
   [path delta]
-  (swap! db/!spec update-in path (fnil #(+ % delta) 0)))
+  (let [cfg-key (path->cfg-key path)
+        step (step-of cfg-key)]
+    (swap! db/!spec update-in path
+           (fnil (fn [v]
+                   (let [next (+ v delta)
+                         clamped (render/clamp-cfg cfg-key next)]
+                     (quantize-by-step clamped step)))
+                 0))))
 
 (defn icon-btn
   [{:keys [title on-click selected? icon]}]
