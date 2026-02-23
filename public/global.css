@@ -41,4 +41,48 @@ body {
     .h3-ns {
         height: 4rem;
     }
+
+    .w23-ns {
+        width: 3rem;
+    }
+    
+    .h23-ns {
+        height: 3rem;
+    }
+}
+
+@media screen and (min-width: 30em) and (max-width: 60em) {
+    .w3-m {
+        width: 4rem;
+    }
+    
+    .h3-m {
+        height: 4rem;
+    }
+
+    .w23-m {
+        width: 3rem;
+    }
+    
+    .h23-m {
+        height: 3rem;
+    }
+}
+
+@media screen and (min-width: 60em) {
+    .w4-l {
+        width: 4rem;
+    }
+    
+    .h4-l {
+        height: 4rem;
+    }
+
+    .w23-l {
+        width: 3rem;
+    }
+    
+    .h23-l {
+        height: 3rem;
+    }
 }

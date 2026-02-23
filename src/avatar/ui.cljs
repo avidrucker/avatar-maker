@@ -615,7 +615,7 @@
      {:title label
       :aria-label label
       :on-click #(reset! db/!active-feature value)
-      :class "pa2 pa0-ns w3-ns h3-ns"
+      :class "pa2 pa0-ns w3-m h3-m w4-l h4-l"
       :style {:display "flex"
               :align-items "center"
               :justify-content "center"
