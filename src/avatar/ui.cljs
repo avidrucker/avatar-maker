@@ -300,6 +300,21 @@
 (defn step-of [k]
   (or (get-in cfg/constants [k :step]) 1))
 
+(def nudge-factor-default
+  "Global multiplier for nudge step size."
+  2)
+
+(def nudge-factor-by-key
+  "Optional per-control override for nudge multipliers.
+   Any key not listed here uses nudge-factor-default."
+  {})
+
+(defn nudge-factor [k]
+  (get nudge-factor-by-key k nudge-factor-default))
+
+(defn nudge-delta [k]
+  (* (step-of k) (nudge-factor k)))
+
 (defn path->cfg-key
   [path]
   (let [[_ part attr] path]
@@ -377,10 +392,10 @@
 
 (defn brows-nudge-controls []
   (let [color "black"
-        dy (step-of :brows/y-offset)
-        ds (step-of :brows/size)
-        dr (step-of :brows/rotation)
-        dx (step-of :brows/x-offset)]
+        dy (nudge-delta :brows/y-offset)
+        ds (nudge-delta :brows/size)
+        dr (nudge-delta :brows/rotation)
+        dx (nudge-delta :brows/x-offset)]
     [:div {:style {:display "grid" :gap 0}}
      [:div {:style {:display "flex" :gap 0}}
       [icon-btn {:title "Brows up"
@@ -413,10 +428,10 @@
 
 (defn eyes-nudge-controls []
   (let [color "black"
-        dy (step-of :eyes/y-offset)
-        ds (step-of :eyes/size)
-        dr (step-of :eyes/rotation)
-        dx (step-of :eyes/spacing)]
+        dy (nudge-delta :eyes/y-offset)
+        ds (nudge-delta :eyes/size)
+        dr (nudge-delta :eyes/rotation)
+        dx (nudge-delta :eyes/spacing)]
     [:div {:style {:display "grid" :gap 0}}
      [:div {:style {:display "flex" :gap 0}}
       [icon-btn {:title "Eyes up"
@@ -488,8 +503,8 @@
 
 (defn nose-nudge-controls []
   (let [color "black"
-        dy (step-of :nose/y-offset)
-        ds (step-of :nose/size)]
+        dy (nudge-delta :nose/y-offset)
+        ds (nudge-delta :nose/size)]
     [:div {:style {:display "grid" :gap 0}}
      [:div {:style {:display "flex" :gap 0}}
       [icon-btn {:title "Nose up"
@@ -568,8 +583,8 @@
 
 (defn mouth-nudge-controls []
   (let [color "black"
-        dy (step-of :mouth/y-offset)
-        ds (step-of :mouth/size)]
+        dy (nudge-delta :mouth/y-offset)
+        ds (nudge-delta :mouth/size)]
     [:div {:style {:display "grid" :gap 0}}
      [:div {:style {:display "flex" :gap 0}}
       [icon-btn {:title "Mouth up"
