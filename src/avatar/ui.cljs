@@ -700,7 +700,7 @@
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
     [:div
-     {:class "ba b--black-20 br3 pa3 mt3 fixed-ns bottom-0 left-0 right-0"}
+     {:class "ba b--black-20 br3 pa3 mt2 fixed-ns bottom-0 left-0 right-0"}
      [:div {:class "flex flex-wrap items-center"}
       [:button {:on-click #(reset! db/!spec cfg/default-spec)} "Reset"]
       [:button {:class "ml2"
@@ -773,11 +773,11 @@
         :style {:flex "0 0 auto"}}
        [render/avatar->hiccup spec]]
       
-      [:div {:class "ba b--black-20 br3 pa2 pa3-l db dn-ns"}
+      [:div {:class "ba b--black-20 br3 pa2 pa3-l db dn-ns mr-auto ml-auto mr0-ns ml0-ns mb2 mb0-ns"}
        [feature-tab-buttons-row]]
 
       [:div
-       {:class "ba b--black-20 br3 pa2 pa3-l"}
+       {:class "ba b--black-20 br3 pa2 pa3-l mr-auto ml-auto mr0-ns ml0-ns"}
        [:div
         {:class "controls-layout measure flex flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
         [:div {:class "shape-pane mr2 pb2"} shape]
