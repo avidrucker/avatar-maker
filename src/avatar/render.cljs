@@ -248,6 +248,75 @@
    [:path {:d "M63.5977 29.0049L31.835 48H67V55H32.2725L62.7402 72.4639L59.2588 78.5361L18 55V48L60.0039 22.9971L63.5977 29.0049Z"
            :fill "black"}]))
 
+(defn eye-010 [{:keys [iris]}]
+  (let [clip-id (str "eye010-" (random-uuid))
+        white-path "M34.998 40.958C45.6789 37.0991 58.413 37.7819 73.1064 42.6796L76.75 43.8945L75.2031 47.4091C69.3171 60.7865 60.1631 68.4349 48.9561 71.6171C37.9468 74.7432 25.3469 73.4513 12.5566 69.8701L8.50977 68.7373L10.3555 64.9628C16.1454 53.1197 24.2475 44.8421 34.998 40.958Z"]
+    (eye-root
+     [:path {:d white-path :fill "white"}]
+     [:defs
+      [:clipPath {:id clip-id}
+       [:path {:d white-path}]]]
+     [:g {:clip-path (str "url(#" clip-id ")")}
+      [:circle {:cx 38 :cy 50 :r 18 :fill (or iris "#3C06FF")}]
+      [:circle {:cx 38 :cy 50 :r 11.6471 :fill "black"}]]
+     [:path {:d "M99 30L82 41.5C70.5 81 34 85 2 70C13 35.5 50 17 79 35.5L96.5 26L99 30ZM72 46C43.5 36.5 24.5 43.9999 13.5 66.5C38.5 73.5 61 71 72 46Z"
+             :fill "black"
+             :fill-rule "evenodd"
+             :clip-rule "evenodd"}])))
+
+(defn eye-011 [{:keys [iris]}]
+  (eye-root
+   [:circle {:cx 38 :cy 50 :r 18 :fill (or iris "#3C06FF")}]
+   [:circle {:cx 38 :cy 50 :r 11.6471 :fill "black"}]))
+
+(defn eye-012 [{:keys [iris]}]
+  (let [clip-id (str "eye012-" (random-uuid))]
+    (eye-root
+     [:circle {:cx 50.5 :cy 51.5 :r 30 :fill "white"}]
+     [:defs
+      [:clipPath {:id clip-id}
+       [:circle {:cx 50.5 :cy 51.5 :r 30}]]]
+     [:g {:clip-path (str "url(#" clip-id ")")}
+      [:circle {:cx 50.5 :cy 51.5 :r 17 :fill (or iris "#3C06FF")}]
+      [:circle {:cx 50.5 :cy 51.5 :r 11 :fill "black"}]]
+     [:path {:d "M75.5 51.2518C75.5 36.8243 64.6355 24.375 50 24.375C35.3645 24.375 24.5 36.8243 24.5 51.2518C24.5 65.6792 35.9167 77.375 50 77.375C64.0833 77.375 75.5 65.6792 75.5 51.2518ZM83.5 51C83.5 69.5015 68.5015 84.5 50 84.5C31.4985 84.5 16.5 69.5015 16.5 51C16.5 32.4985 31.4985 17.5 50 17.5C68.5015 17.5 83.5 32.4985 83.5 51Z"
+             :fill "black"}])))
+
+(defn eye-013 [{:keys [iris]}]
+  (let [clip-id (str "eye013-" (random-uuid))
+        white-path "M16 41H84C84 86.3333 16 86.3333 16 41Z"]
+    (eye-root
+     [:path {:d white-path :fill "white"}]
+     [:defs
+      [:clipPath {:id clip-id}
+       [:path {:d white-path}]]]
+     [:g {:clip-path (str "url(#" clip-id ")")}
+      [:circle {:cx 49.75 :cy 39.4775 :r 23.5 :fill (or iris "#3C06FF")}]
+      [:ellipse {:cx 50.25 :cy 39.4775 :rx 15 :ry 15.5 :fill "black"}]]
+     [:path {:d "M87.5 37.5V41C87.5 53.2831 82.859 62.7529 75.7002 69.1162C68.6059 75.4222 59.2457 78.5 50 78.5C40.7543 78.5 31.3941 75.4222 24.2998 69.1162C17.141 62.7529 12.5 53.2831 12.5 41V37.5H87.5ZM19.6543 44.5C20.4207 53.0966 25.0079 59.4906 29.9502 63.8838C35.6058 68.911 42.2457 71 50 71C57.7542 71 64.3942 68.911 70.0498 63.8838C74.9921 59.4906 79.5793 53.0966 80.3457 44.5H19.6543Z"
+             :fill "black"}])))
+
+(defn eye-014 [{:keys [iris]}]
+  (let [clip-id (str "eye014-" (random-uuid))
+        white-path "M42.7412 35.6751C57.2775 30.4836 71.8013 35.4767 84.2666 43.3265C79.0439 55.5211 71.0228 66.0412 57.6689 69.7054C43.7774 73.5171 29.5529 69.3509 16.6211 64.18C21.5408 51.604 29.5201 40.3969 42.7412 35.6751Z"]
+    (eye-root
+     [:path {:d white-path :fill "white"}]
+     [:defs
+      [:clipPath {:id clip-id}
+       [:path {:d white-path}]]]
+     [:g {:clip-path (str "url(#" clip-id ")")}
+      [:circle {:cx 44 :cy 53.5 :r 19.5 :fill (or iris "#3C06FF")}]
+      [:circle {:cx 44 :cy 53.5 :r 12.5 :fill "black"}]]
+     [:path {:d "M41.4502 31.3279C58.776 25.1525 77 30.4999 89.7139 42.3201C85 58.9998 74.0481 70.609 57.6406 74.7644C41.5048 78.851 23 73.4998 11.2744 65.7097C15.5 49.4999 25.7694 36.9171 41.4502 31.3279ZM80.5 44.4998C53.5001 27.4999 29.5001 39.4999 20.5 62.4998C48 73.4998 70 68.9998 80.5 44.4998Z"
+             :fill "black"
+             :fill-rule "evenodd"
+             :clip-rule "evenodd"}])))
+
+(defn eye-015 [_]
+  (eye-root
+   [:path {:d "M18 41H76V50H18V41Z"
+           :fill "black"}]))
+
 ;; -------------------------
 ;; Brow renderers
 ;; -------------------------
@@ -619,7 +688,13 @@
    
      :007 {:label "007" :render eye-007 :order 7}
      :008 {:label "008" :render eye-008 :order 8}
-     :009 {:label "009" :render eye-009 :order 9}}}
+     :009 {:label "009" :render eye-009 :order 9}
+     :010 {:label "010" :render eye-010 :order 10}
+     :011 {:label "011" :render eye-011 :order 11}
+     :012 {:label "012" :render eye-012 :order 12}
+     :013 {:label "013" :render eye-013 :order 13}
+     :014 {:label "014" :render eye-014 :order 14}
+     :015 {:label "015" :render eye-015 :order 15}}}
 
    :nose
    {:default :one
