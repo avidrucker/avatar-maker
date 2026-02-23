@@ -45,10 +45,11 @@
     (let [p (page-get page-key)
           prev-disabled? (<= p 0)
           next-disabled? (>= p (dec pages))]
-      [:div {:style {:display "flex"
+      [:div {:class "pb2"
+             :style {:display "flex"
                      :align-items "center"
                      :gap "8px"
-                     :margin "8px 0"}}
+                     }}
 
        [:button {:disabled prev-disabled?
                  :title "Previous"
@@ -356,7 +357,7 @@
         ds (step-of :brows/size)
         dr (step-of :brows/rotation)
         dx (step-of :brows/x-offset)]
-    [:div {:style {:display "grid" :gap 0 :margin "8px 0 12px"}}
+    [:div {:style {:display "grid" :gap 0}}
      [:div {:style {:display "flex" :gap 0}}
       [icon-btn {:title "Brows up"
                  :icon (icons/btn-move-up color)
@@ -392,7 +393,7 @@
         ds (step-of :eyes/size)
         dr (step-of :eyes/rotation)
         dx (step-of :eyes/spacing)]
-    [:div {:style {:display "grid" :gap 0 :margin "8px 0 12px"}}
+    [:div {:style {:display "grid" :gap 0}}
      [:div {:style {:display "flex" :gap 0}}
       [icon-btn {:title "Eyes up"
                  :icon (icons/btn-move-up color)
@@ -465,7 +466,7 @@
   (let [color "black"
         dy (step-of :nose/y-offset)
         ds (step-of :nose/size)]
-    [:div {:style {:display "grid" :gap 0 :margin "8px 0 12px"}}
+    [:div {:style {:display "grid" :gap 0}}
      [:div {:style {:display "flex" :gap 0}}
       [icon-btn {:title "Nose up"
                  :icon (icons/btn-move-up color)
@@ -545,7 +546,7 @@
   (let [color "black"
         dy (step-of :mouth/y-offset)
         ds (step-of :mouth/size)]
-    [:div {:style {:display "grid" :gap 0 :margin "8px 0 12px"}}
+    [:div {:style {:display "grid" :gap 0}}
      [:div {:style {:display "flex" :gap 0}}
       [icon-btn {:title "Mouth up"
                  :icon (icons/btn-move-up color)
@@ -616,7 +617,7 @@
      {:title label
       :aria-label label
       :on-click #(reset! db/!active-feature value)
-      :class "mr2 mb2"
+      :class "mr2"
       :style {:padding "6px 10px"
               :border (if active? "2px solid blue" "1px solid gray")
               :background (if active? "#eef5ff" "white")}}
@@ -719,7 +720,7 @@
     [:div {:class "pa2"}
 
      [:div
-      {:class "dn db-ns ba b--black-20 br3 pa2 mb3"}
+      {:class "dn db-ns ba b--black-20 br3 mb3"}
       [feature-tab-buttons-row]]
 
      [:div
