@@ -3,12 +3,6 @@ body {
     margin: 0;
 }
 
-.controls-layout {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-}
-
 .shape-pane {
     order: 1;
 }
@@ -67,6 +61,10 @@ body {
     .h23-m {
         height: 3rem;
     }
+
+    .w6-m {
+        width: 32rem;
+    }
 }
 
 @media screen and (min-width: 60em) {
@@ -84,5 +82,9 @@ body {
     
     .h23-l {
         height: 3rem;
+    }
+
+    .w6-l {
+        width: 32rem;
     }
 }

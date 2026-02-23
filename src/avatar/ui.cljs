@@ -725,20 +725,21 @@
       [feature-tab-buttons-row]]
 
      [:div
-      {:class "flex flex-column flex-row-ns items-start"}
+      {:class "flex flex-column flex-row-ns items-start justify-center-ns"}
 
       [:div
-       {:class "w-100 w5-m w6-ns ba b--black-20 br3 mb2 mb0-ns mr2-ns"}
+       {:class "w-100 w-50-ns measure-narrow mr-auto ml-auto ba b--black-20 br3 mb2 mb0-ns mr2-ns ml0-ns"
+        :style {:flex "0 0 auto"}}
        [render/avatar->hiccup spec]]
       
-      [:div {:class "w-100 ba b--black-20 br3 pa2 pa3-l db dn-ns"}
+      [:div {:class "ba b--black-20 br3 pa2 pa3-l db dn-ns"}
        [feature-tab-buttons-row]]
 
       [:div
-       {:class "w-100 ba b--black-20 br3 pa2 pa3-l"}
+       {:class "ba b--black-20 br3 pa2 pa3-l"}
        [:div
-        {:class "controls-layout"}
-        [:div {:class "shape-pane mr2"} shape]
+        {:class "controls-layout measure flex flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
+        [:div {:class "shape-pane mr2 pb2"} shape]
         [:div {:class "meta-pane ml2-l"}
          (when swatches
            [:div {:class "mb2"} swatches])

@@ -4,7 +4,7 @@
   "Wrap a 100x100 icon in a consistent svg shell."
   [children]
   [:svg {:viewBox "0 0 100 100"
-         :class "w2 h2 w23-m h23-m"
+         :class "w2 h2"
          :aria-hidden true}
    children])
 
