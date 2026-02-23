@@ -118,8 +118,7 @@
 
 (defn head-shape-panel [spec]
   [:div
-   ;; [:div {:style {:font-size 12 :margin-bottom 6}} "Head Shape"]
-
+   ;; head shape panel
    (let [entries (head-shape-entries)
          paged (paginate entries (page-get :shape/head) 9)]
      [:<>
@@ -129,13 +128,13 @@
                      :gap feature-button-gap}}
        (doall
         (for [[k {:keys [label]}] (:items paged)]
-         (head-shape-button spec k label)))]])])
+          (head-shape-button spec k label)))]])])
 
 (defn head-swatch-panel [spec]
   (let [selected-skin (get-in spec [:parts :head :skin])
         paged (paginate cfg/skin-swatches (page-get :swatch/skin) 12)]
     [:div
-     ;; [:div {:style {:font-size 12 :margin "0 0 6px"}} "Skin Tone"]
+     ;; skin tone panel / head swatch panel
      [:<>
       [pager :swatch/skin (:pages paged)]
       [:div {:style {:display "grid"
@@ -191,7 +190,7 @@
         entries (vec (render/sorted-shape-entries :hair))
         paged (paginate entries (page-get :shape/hair) 9)]
     [:div
-     ;; [:div {:style {:font-size 12 :margin-bottom 6}} "Hair Style"]
+     ;; hair style panel
      [:<>
       [pager :shape/hair (:pages paged)]
       [:div {:style {:display "grid"
@@ -221,7 +220,7 @@
   (let [selected-color (get-in spec [:parts :hair :color])
         paged (paginate cfg/hair-swatches (page-get :swatch/hair) 8)]
     [:div
-     ;; [:div {:style {:font-size 12 :margin "0 0 6px"}} "Hair Color"]
+     ;; hair color panel
      [:<>
       [pager :swatch/hair (:pages paged)]
       [:div {:style {:display "grid"
@@ -233,7 +232,7 @@
           [color-swatch-button
            {:selected? (= selected-color (:key swatch))
             :swatch swatch
-           :on-click #(swap! db/!spec assoc-in
+            :on-click #(swap! db/!spec assoc-in
                               [:parts :hair :color]
                               (:key swatch))}]))]]]))
 
@@ -268,7 +267,7 @@
   (let [entries (vec (render/sorted-shape-entries :eyes))
         paged (paginate entries (page-get :shape/eyes) 9)]
     [:div
-     ;; [:div {:style {:font-size 12 :margin-bottom 6}} "Eye Shape"]
+     ;; eye shape panel
      [:<>
       [pager :shape/eyes (:pages paged)]
       [:div {:style {:display "grid"
@@ -282,7 +281,7 @@
   (let [selected-iris (get-in spec [:parts :eyes :iris])
         paged (paginate cfg/iris-swatches (page-get :swatch/iris) 6)]
     [:div
-     ;; [:div {:style {:font-size 12 :margin "0 0 6px"}} "Iris Color"]
+     ;; iris color panel / eye swatch panel
      [:<>
       [pager :swatch/iris (:pages paged)]
       [:div {:style {:display "grid"
@@ -311,11 +310,10 @@
   [:button
    {:title title
     :aria-label title
+    :class "w23 h23 w3-ns h3-ns"
     :style {:display "flex"
             :align-items "center"
             :justify-content "center"
-            :width 64
-            :height 64
             :border (if selected? "2px solid #333" "1px solid #ccc")
             :background "#fff"
             :cursor "pointer"}
@@ -564,7 +562,7 @@
 
 (defn brows-shape-panel [spec]
   [:div
-   ;; [:div {:style {:font-size 12 :margin "12px 0 6px"}} "Brow Shape"]
+   ;; brow shape panel
    (let [entries (vec (render/sorted-shape-entries :brows))
          paged (paginate entries (page-get :shape/brows) 9)]
      [:<>
@@ -574,13 +572,13 @@
                      :gap feature-button-gap}}
        (doall
         (for [[k {:keys [label]}] (:items paged)]
-          (brow-shape-button spec k label)))]] )])
+          (brow-shape-button spec k label)))]])])
 
 (defn brows-swatch-panel [spec]
   (let [selected-color (get-in spec [:parts :brows :color])
         paged (paginate cfg/hair-swatches (page-get :swatch/brows) 8)]
-    [:div
-     ;; [:div {:style {:font-size 12 :margin "0 0 6px"}} "Brow Color"]
+    [:div 
+    ;; brow color panel / brow swatch panel
      [:<>
       [pager :swatch/brows (:pages paged)]
       [:div {:style {:display "grid"
@@ -617,14 +615,16 @@
      {:title label
       :aria-label label
       :on-click #(reset! db/!active-feature value)
-      :class "mr2"
-      :style {:padding "6px 10px"
+      :class "pa2 pa0-ns w3-ns h3-ns"
+      :style {:display "flex"
+              :align-items "center"
+              :justify-content "center"
               :border (if active? "2px solid blue" "1px solid gray")
               :background (if active? "#eef5ff" "white")}}
      icon]))
 
 (defn feature-tab-buttons-row []
-  [:div {:class "flex flex-wrap"}
+  [:div {:class "flex flex-wrap items-center justify-center"}
    (doall
     (for [tab-btn feature-tab-buttons]
       (feature-tab-btn tab-btn)))])
@@ -659,7 +659,7 @@
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
     [:div
-     {:class "ba b--black-20 br3 pa3 mt3"}
+     {:class "ba b--black-20 br3 pa3 mt3 fixed-ns bottom-0 left-0 right-0"}
      [:div {:class "flex flex-wrap items-center"}
       [:button {:on-click #(reset! db/!spec cfg/default-spec)} "Reset"]
       [:button {:class "ml2"
@@ -717,29 +717,31 @@
 (defn main-panel []
   (let [spec @db/!spec
         {:keys [shape swatches nudge]} (active-feature-sections spec)]
-    [:div {:class "pa2"}
+    [:div {:class "pa2 relative"}
 
      [:div
-      {:class "dn db-ns ba b--black-20 br3 mb3"}
+      ;; feature tab buttons that render for tablet and desktop 
+      {:class "dn db-ns ba b--black-20 br3 mb2"}
       [feature-tab-buttons-row]]
 
      [:div
       {:class "flex flex-column flex-row-ns items-start"}
 
       [:div
-       {:class "w-100 w5-ns ba b--black-20 br3 pa3 mb3 mb0-ns mr3-ns"}
-       [render/avatar->hiccup spec]
-       [:div {:class "db dn-ns mt3"}
-        [feature-tab-buttons-row]]]
+       {:class "w-100 w5-m w6-ns ba b--black-20 br3 mb2 mb0-ns mr2-ns"}
+       [render/avatar->hiccup spec]]
+      
+      [:div {:class "w-100 ba b--black-20 br3 pa2 pa3-l db dn-ns"}
+       [feature-tab-buttons-row]]
 
       [:div
-       {:class "w-100 flex-auto ba b--black-20 br3 pa3"}
+       {:class "w-100 ba b--black-20 br3 pa2 pa3-l"}
        [:div
         {:class "controls-layout"}
-        [:div {:class "shape-pane"} shape]
-        [:div {:class "meta-pane"}
+        [:div {:class "shape-pane mr2"} shape]
+        [:div {:class "meta-pane ml2-l"}
          (when swatches
-           [:div {:class "mb3"} swatches])
+           [:div {:class "mb2"} swatches])
          (when nudge
            [:div nudge])]]]]
 

@@ -5,34 +5,40 @@ body {
 
 .controls-layout {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
 }
 
 .shape-pane {
-    order: 2;
-    width: 100%;
+    order: 1;
 }
 
 .meta-pane {
-    order: 1;
-    width: 100%;
+    order: 2;
+}
+
+.w23 {
+    width: 3rem;
+}
+
+.h23 {
+    height: 3rem;
+}
+
+.w6 {
+    width: 32rem;
 }
 
 @media screen and (min-width: 30em) {
-    .controls-layout {
-        flex-direction: row;
+    .w6-ns {
+        width: 32rem;
     }
 
-    .shape-pane {
-        order: 1;
-        width: 50%;
-        padding-right: 1rem;
-        margin-bottom: 0;
+    .w3-ns {
+        width: 4rem;
     }
-
-    .meta-pane {
-        order: 2;
-        width: 50%;
+    
+    .h3-ns {
+        height: 4rem;
     }
 }
