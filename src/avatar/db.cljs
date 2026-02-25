@@ -7,6 +7,7 @@
 ;; UI State
 (defonce !active-feature (r/atom :head))
 (defonce !ui-pages (r/atom {}))
+(defonce !other-subcategory (r/atom :glasses))
 
 ;; Persistent/local storage keys
 (def storage-key "mii-svg-avatar/v016")

@@ -127,6 +127,37 @@
 (def lip-colors
   (into {} (map (fn [{:keys [key hex]}] [key hex]) lip-colors-ordered)))
 
+;; Glasses/shades colors use the same ordered keys so selection can stay synced
+;; when switching styles (regular glasses <-> shades).
+(def glasses-color-order
+  [:red :blue :gold :silver :brown :charcoal])
+
+(def frame-colors
+  {:red "#A32B10"
+   :blue "#174580"
+   :gold "#A96B08"
+   :silver "#ABACA4"
+   :brown "#695115"
+   :charcoal "#4C5554"})
+
+(def shades-colors
+  {:red "#AC5039"
+   :blue "#396191"
+   :gold "#B87E25"
+   :silver "#BFC1BB"
+   :brown "#806B34"
+   :charcoal "#5C6665"})
+
+(def frame-swatches
+  (vec
+   (for [k glasses-color-order]
+     {:key k :label (name k) :hex (get frame-colors k)})))
+
+(def shades-swatches
+  (vec
+   (for [k glasses-color-order]
+     {:key k :label (name k) :hex (get shades-colors k)})))
+
 (def default-spec
   {:version 16 
    :parts 
@@ -136,5 +167,10 @@
     :brows {:shape :004 :color :jet-black :size 1 :x-offset -8 :y-offset 12 :rotation 16} 
     :nose {:shape :one :stroke "black" :size 1.04 :y-offset -5} 
     :mouth {:shape :seventeen :color :natural :size 0.94 :y-offset 10} 
-    :ears {:shape :none}}} 
+    :ears {:shape :none}
+    :other {:category :glasses
+            :glasses {:shape :none
+                      :color :blue
+                      :scale 1.0
+                      :y-offset 0}}}} 
   )

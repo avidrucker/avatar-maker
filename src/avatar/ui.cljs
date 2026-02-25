@@ -318,9 +318,17 @@
 
 (defn path->cfg-key
   [path]
-  (let [[_ part attr] path]
-    (when (and (keyword? part) (keyword? attr))
-      (keyword (str (name part) "/" (name attr))))))
+  (let [[a b c d] path]
+    (cond
+      ;; [:parts :feature :attr]
+      (and (= a :parts) (keyword? b) (keyword? c) (nil? d))
+      (keyword (str (name b) "/" (name c)))
+
+      ;; [:parts :other :glasses :attr]
+      (and (= a :parts) (= b :other) (keyword? c) (keyword? d))
+      (keyword (str (name c) "/" (name d)))
+
+      :else nil)))
 
 (defn decimals-of [n]
   (let [s (str n)
@@ -632,9 +640,135 @@
           [color-swatch-button
            {:selected? (= selected-color (:key swatch))
             :swatch swatch
-            :on-click #(swap! db/!spec assoc-in
+           :on-click #(swap! db/!spec assoc-in
                               [:parts :brows :color]
                               (:key swatch))}]))]]]))
+
+(defn glasses-kind [shape]
+  (let [s (name (or shape :none))]
+    (cond
+      (= s "none") :none
+      (.startsWith s "shades_") :shades
+      :else :regular)))
+
+(defn glasses-preview-svg [spec shape]
+  (let [renderer (render/resolve-renderer :glasses shape)
+        color (get-in spec [:parts :other :glasses :color])]
+    [:svg {:viewBox "0 0 100 100"
+           :width 48
+           :height 48}
+     [:g {:transform "translate(50 50)"}
+      (renderer {:color color})]]))
+
+(defn glasses-shape-button [spec shape label]
+  (let [selected? (= (get-in spec [:parts :other :glasses :shape]) shape)]
+    ^{:key (name shape)}
+    [:button
+     {:title label
+      :style {:display "flex"
+              :align-items "center"
+              :justify-content "center"
+              :width 68
+              :height 68
+              :padding 6
+              :border (if selected? "2px solid #333" "1px solid #ccc")
+              :background "#fff"
+              :border-radius 10
+              :cursor "pointer"}
+      :on-click #(swap! db/!spec assoc-in [:parts :other :glasses :shape] shape)}
+     (glasses-preview-svg spec shape)]))
+
+(defn glasses-shape-panel [spec]
+  (let [entries (vec (render/sorted-shape-entries :glasses))
+        paged (paginate entries (page-get :shape/glasses) 9)]
+    [:div
+     [:<>
+      [pager :shape/glasses (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(3, 68px)"
+                     :gap feature-button-gap}}
+       (doall
+        (for [[k {:keys [label]}] (:items paged)]
+          (glasses-shape-button spec k label)))]]]))
+
+(defn glasses-swatch-panel [spec]
+  (let [shape (get-in spec [:parts :other :glasses :shape])
+        kind (glasses-kind shape)
+        selected (get-in spec [:parts :other :glasses :color])
+        swatches (if (= kind :shades) cfg/shades-swatches cfg/frame-swatches)
+        page-key (if (= kind :shades) :swatch/shades :swatch/frame)
+        paged (paginate swatches (page-get page-key) 6)]
+    [:div
+     [:<>
+      [pager page-key (:pages paged)]
+      [:div {:style {:display "grid"
+                     :grid-template-columns "repeat(3, 32px)"
+                     :gap swatch-button-gap}}
+       (doall
+        (for [swatch (:items paged)]
+          ^{:key (:key swatch)}
+          [color-swatch-button
+           {:selected? (= selected (:key swatch))
+            :swatch swatch
+            :on-click #(swap! db/!spec assoc-in
+                              [:parts :other :glasses :color]
+                              (:key swatch))}]))]]]))
+
+(defn glasses-nudge-controls []
+  (let [color "black"
+        dy (nudge-delta :glasses/y-offset)
+        ds (nudge-delta :glasses/scale)]
+    [:div {:style {:display "grid" :gap 0}}
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Glasses up"
+                 :icon (icons/btn-move-up color)
+                 :on-click #(nudge! [:parts :other :glasses :y-offset] (- dy))}]
+      [icon-btn {:title "Glasses down"
+                 :icon (icons/btn-move-down color)
+                 :on-click #(nudge! [:parts :other :glasses :y-offset] dy)}]]
+     [:div {:style {:display "flex" :gap 0}}
+      [icon-btn {:title "Glasses bigger"
+                 :icon (icons/btn-scale-up color)
+                 :on-click #(nudge! [:parts :other :glasses :scale] ds)}]
+      [icon-btn {:title "Glasses smaller"
+                 :icon (icons/btn-scale-down color)
+                 :on-click #(nudge! [:parts :other :glasses :scale] (- ds))}]]]))
+
+(def other-subcategory-tabs
+  [{:value :glasses :label "Glasses" :icon (icons/icon-glasses "black")}
+   {:value :birthmark :label "Birthmark" :icon (icons/icon-birthmark "black")}
+   {:value :mustache :label "Mustache" :icon (icons/icon-mustache "black")}
+   {:value :beard :label "Beard" :icon (icons/icon-beard "black")}])
+
+(defn other-subcategory-tabs-row []
+  [:div {:class "mb2 flex flex-wrap justify-center"}
+   (doall
+    (for [{:keys [value label icon]} other-subcategory-tabs]
+      (let [active? (= @db/!other-subcategory value)]
+        ^{:key (name value)}
+        [:button
+         {:title label
+          :aria-label label
+          :on-click #(reset! db/!other-subcategory value)
+          :class "pa2 pa0-ns w3-m h3-m w4-l h4-l"
+          :style {:display "flex"
+                  :align-items "center"
+                  :justify-content "center"
+                  :border (if active? "2px solid blue" "1px solid gray")
+                  :background (if active? "#eef5ff" "white")}}
+         icon])))])
+
+(defn other-feature-sections [spec]
+  (case @db/!other-subcategory
+    :glasses
+    {:shape [glasses-shape-panel spec]
+     :swatches [glasses-swatch-panel spec]
+     :nudge [glasses-nudge-controls]}
+
+    :birthmark {:shape [:div {:style {:font-size 12 :opacity 0.7}} "Birthmark coming soon."]}
+    :mustache {:shape [:div {:style {:font-size 12 :opacity 0.7}} "Mustaches coming soon."]}
+    :beard {:shape [:div {:style {:font-size 12 :opacity 0.7}} "Beards coming soon."]}
+    {:shape [:div {:style {:font-size 12 :opacity 0.7}} "Coming soon."]}))
 
 ;; -------------------------
 ;; Feature category tabs
@@ -738,7 +872,9 @@
     :mouth {:shape [mouth-shape-panel spec]
             :swatches [mouth-swatch-panel spec]
             :nudge [mouth-nudge-controls]}
-    :other {:shape [:div "Other controls (coming soon)"]}
+    :other (merge
+            {:prefix [other-subcategory-tabs-row]}
+            (other-feature-sections spec))
     {:shape [:div "Select a feature"]}))
 
 (defn footer-tools-panel []
@@ -822,7 +958,7 @@
 (defn main-panel []
   (let [spec @db/!spec
         sections (active-feature-sections spec)
-        {:keys [shape swatches nudge]} sections]
+        {:keys [prefix shape swatches nudge]} sections]
     [:div {:class "pa1 relative"}
 
      [:div
@@ -844,12 +980,16 @@
       [:div
        {:class "mobile-subpanel-container w-100 ba b--black-20 br3 pa2 pa3-l mr-auto ml-auto mr0-ns ml0-ns"}
        [:div {:class "mobile-tabbed-subpanel"}
+        (when prefix
+          [:div prefix])
         [mobile-subpanel-tabs-row sections]
         [:div {:class "flex items-start justify-center"}
          (mobile-active-subpanel-content sections)]]
 
        [:div
         {:class "horizontal-tab-container controls-layout measure flex flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
+        (when prefix
+          [:div {:class "w-100"} prefix])
         [:div {:class "shape-pane mr2 pb2"} shape]
         [:div {:class "meta-pane ml2-l"}
          (when swatches
