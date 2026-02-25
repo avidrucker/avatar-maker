@@ -128,11 +128,13 @@
   (into {} (map (fn [{:keys [key hex]}] [key hex]) lip-colors-ordered)))
 
 (def default-spec
-  {:version 16
-   :parts {:head {:shape :average :skin :tan}
-           :eyes {:spacing 0.54 :size 1.1 :y-offset 0 :rotation 0 :shape :001 :iris :black}
-           :hair {:shape :bald :color :jet-black}
-           :brows {:shape :none :color :jet-black :size 1.0 :x-offset 0 :y-offset 0 :rotation 0}
-           :nose {:shape :one :stroke "black" :size 1 :y-offset -5}
-           :mouth {:shape :twenty :color :black :size 0.94 :y-offset 8}
-           }})
+  {:version 16 
+   :parts 
+   {:head {:shape :egg :skin :light-cream} 
+    :eyes {:spacing 0.54 :size 1 :y-offset 12 :rotation 0 :shape :002 :iris :brown} 
+    :hair {:shape :one :color :espresso} 
+    :brows {:shape :004 :color :jet-black :size 1 :x-offset -8 :y-offset 12 :rotation 16} 
+    :nose {:shape :one :stroke "black" :size 1.04 :y-offset -5} 
+    :mouth {:shape :seventeen :color :natural :size 0.94 :y-offset 10} 
+    :ears {:shape :none}}} 
+  )
