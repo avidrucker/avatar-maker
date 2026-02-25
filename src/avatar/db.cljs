@@ -11,6 +11,7 @@
 ;; Persistent/local storage keys
 (def storage-key "mii-svg-avatar/v016")
 (def show-svg-key "mii-svg-avatar/show-svg")
+(def show-presets-key "mii-svg-avatar/show-presets")
 (def active-feature-key "mii-svg-avatar/active-feature")
 
 ;; Footer tool state

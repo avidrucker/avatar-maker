@@ -126,6 +126,7 @@
   (state/reset-spec! (or (load-spec) cfg/default-spec))
   (state/swap-ui! assoc
                   :show-svg? (load-bool db/show-svg-key false)
+                  :show-presets? (load-bool db/show-presets-key false)
                   :active-feature (load-active-feature :head))
 
   (remove-watch state/!app ::persist-app)
@@ -135,11 +136,15 @@
                      new-spec (:spec new-app)
                      old-show-svg? (get-in old-app [:ui :show-svg?])
                      new-show-svg? (get-in new-app [:ui :show-svg?])
+                     old-show-presets? (get-in old-app [:ui :show-presets?])
+                     new-show-presets? (get-in new-app [:ui :show-presets?])
                      old-feature (get-in old-app [:ui :active-feature])
                      new-feature (get-in new-app [:ui :active-feature])]
                  (when (not= old-spec new-spec)
                    (save-spec! new-spec))
                  (when (not= old-show-svg? new-show-svg?)
                    (save-bool! db/show-svg-key new-show-svg?))
+                 (when (not= old-show-presets? new-show-presets?)
+                   (save-bool! db/show-presets-key new-show-presets?))
                  (when (not= old-feature new-feature)
                    (save-active-feature! new-feature))))))
