@@ -1,4 +1,4 @@
-const CACHE = "avatar-cache-v2";
+const CACHE = "avatar-cache-v3";
 const ASSETS = [
   "./",
   "./index.html",

@@ -1,7 +1,9 @@
 {
+  "id": "./",
   "name": "Avatar Creator",
   "short_name": "Avatar",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
@@ -9,4 +11,3 @@
     { "src": "./vite.svg", "sizes": "any", "type": "image/svg+xml" }
   ]
 }
-
