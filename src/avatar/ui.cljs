@@ -934,8 +934,8 @@
         show-presets? (get-in (state/ui) [:show-presets?])
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
-    [:div
-     {:class "ba b--black-20 br3 pa3 mt2 fixed-ns bottom-0 left-0 right-0"}
+    [:footer
+     {:class "footer bg-white ba b--black-20 br3 pa3 mt2 fixed-ns bottom-0 left-0 right-0"}
      [:div {:class "flex flex-wrap items-center"}
       [:button {:on-click #(state/reset-spec! cfg/default-spec)} "Reset"]
       [:button {:class "ml2"
