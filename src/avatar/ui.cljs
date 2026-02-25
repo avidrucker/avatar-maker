@@ -3,7 +3,8 @@
             [avatar.render :as render]
             [avatar.storage :as storage]
             [avatar.config :as cfg]
-            [avatar.icons :as icons]))
+            [avatar.icons :as icons]
+            [reagent.core :as r]))
 
 ;; -------------------------
 ;; Pagination (v016 version)
@@ -670,6 +671,53 @@
     (for [tab-btn feature-tab-buttons]
       (feature-tab-btn tab-btn)))])
 
+(defonce !mobile-subpanel (r/atom :shape))
+
+(def mobile-subpanel-tabs
+  [{:value :shape :label "Shapes"}
+   {:value :swatches :label "Colors"}
+   {:value :nudge :label "Adjust"}])
+
+(defn available-mobile-subpanels [{:keys [shape swatches nudge]}]
+  (cond-> []
+    shape (conj :shape)
+    swatches (conj :swatches)
+    nudge (conj :nudge)))
+
+(defn active-mobile-subpanel [sections]
+  (let [available (set (available-mobile-subpanels sections))
+        current @!mobile-subpanel
+        fallback (or (first (available-mobile-subpanels sections)) :shape)]
+    (if (contains? available current) current fallback)))
+
+(defn mobile-subpanel-tabs-row [sections]
+  (let [available (set (available-mobile-subpanels sections))
+        active (active-mobile-subpanel sections)]
+    [:div {:class "flex items-center justify-center flex-wrap mb2"}
+     (doall
+      (for [{:keys [value label]} mobile-subpanel-tabs]
+        (let [enabled? (contains? available value)
+              selected? (= active value)]
+          ^{:key (name value)}
+          [:button
+           {:title label
+            :aria-label label
+            :disabled (not enabled?)
+            :on-click #(reset! !mobile-subpanel value)
+            :class "mr2 mb2"
+            :style {:padding "6px 10px"
+                    :opacity (if enabled? 1 0.35)
+                    :border (if selected? "2px solid blue" "1px solid gray")
+                    :background (if selected? "#eef5ff" "white")}}
+           label])))]))
+
+(defn mobile-active-subpanel-content [sections]
+  (case (active-mobile-subpanel sections)
+    :shape (:shape sections)
+    :swatches (:swatches sections)
+    :nudge (:nudge sections)
+    (:shape sections)))
+
 ;; -------------------------
 ;; Feature Sections
 ;; -------------------------
@@ -757,7 +805,8 @@
 
 (defn main-panel []
   (let [spec @db/!spec
-        {:keys [shape swatches nudge]} (active-feature-sections spec)]
+        sections (active-feature-sections spec)
+        {:keys [shape swatches nudge]} sections]
     [:div {:class "pa2 relative"}
 
      [:div
@@ -778,8 +827,13 @@
 
       [:div
        {:class "ba b--black-20 br3 pa2 pa3-l mr-auto ml-auto mr0-ns ml0-ns"}
+       [:div {:class "db dn-ns"}
+        [mobile-subpanel-tabs-row sections]
+        [:div {:class "flex items-start justify-center"}
+         (mobile-active-subpanel-content sections)]]
+
        [:div
-        {:class "controls-layout measure flex flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
+        {:class "dn controls-layout measure flex-ns flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
         [:div {:class "shape-pane mr2 pb2"} shape]
         [:div {:class "meta-pane ml2-l"}
          (when swatches
