@@ -1031,7 +1031,7 @@
       {:class "flex flex-column flex-row-ns items-start justify-center-ns"}
 
       [:div
-       {:class "w-100 w-50-ns measure-narrow mr-auto ml-auto ba b--black-20 br3 mb2 mb0-ns mr2-ns ml0-ns"
+       {:class "avatar-preview-container w-100 w-50-ns measure-narrow mr-auto ml-auto ba b--black-20 br3 mb2 mb0-ns mr2-ns ml0-ns"
         :style {:flex "0 0 auto"}}
        [render/avatar->hiccup spec]] 
 
