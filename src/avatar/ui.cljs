@@ -966,7 +966,7 @@
       {:class "dn db-ns ba b--black-20 br3 mb2"}
       [feature-tab-buttons-row]]
 
-     [:div {:class "feature-tab-buttons-row-mobile ba b--black-20 br3 pa2 pa3-l db dn-ns mr-auto ml-auto mr0-ns ml0-ns mb2 mb0-ns"}
+     [:div {:class "feature-tab-buttons-row-mobile ba b--black-20 br3 pa2 db dn-ns mr-auto ml-auto mr0-ns ml0-ns mb2 mb0-ns"}
       [feature-tab-buttons-row]]
 
      [:div
@@ -978,7 +978,7 @@
        [render/avatar->hiccup spec]] 
 
       [:div
-       {:class "mobile-subpanel-container w-100 ba b--black-20 br3 pa2 pa3-l mr-auto ml-auto mr0-ns ml0-ns"}
+       {:class "mobile-subpanel-container w-100 flex-ns flex-column ba b--black-20 br3 pa2 mr-auto ml-auto mr0-ns ml0-ns"}
        [:div {:class "mobile-tabbed-subpanel"}
         (when prefix
           [:div prefix])
@@ -989,7 +989,7 @@
        [:div
         {:class "horizontal-tab-container controls-layout measure flex flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
         (when prefix
-          [:div {:class "w-100"} prefix])
+          [:div {:class "w-100 w-auto-ns"} prefix])
         [:div {:class "shape-pane mr2 pb2"} shape]
         [:div {:class "meta-pane ml2-l"}
          (when swatches
