@@ -1,13 +1,12 @@
 (ns avatar.db
-  (:require [reagent.core :as r]))
+  (:require [avatar.state :as state]
+            [reagent.core :as r]))
 
-;; The single source of truth
-(defonce !spec (r/atom nil))
-
-;; UI State
-(defonce !active-feature (r/atom :head))
-(defonce !ui-pages (r/atom {}))
-(defonce !other-subcategory (r/atom :glasses))
+;; Compatibility cursors into unified app state.
+(defonce !spec (r/cursor state/!app [:spec]))
+(defonce !active-feature (r/cursor state/!app [:ui :active-feature]))
+(defonce !ui-pages (r/cursor state/!app [:ui :ui-pages]))
+(defonce !other-subcategory (r/cursor state/!app [:ui :other-subcategory]))
 
 ;; Persistent/local storage keys
 (def storage-key "mii-svg-avatar/v016")
@@ -15,8 +14,8 @@
 (def active-feature-key "mii-svg-avatar/active-feature")
 
 ;; Footer tool state
-(defonce !show-svg? (r/atom false))
-(defonce !show-edn? (r/atom false))
-(defonce !show-about? (r/atom false))
-(defonce !edn-import-text (r/atom ""))
-(defonce !edn-import-error (r/atom nil))
+(defonce !show-svg? (r/cursor state/!app [:ui :show-svg?]))
+(defonce !show-edn? (r/cursor state/!app [:ui :show-edn?]))
+(defonce !show-about? (r/cursor state/!app [:ui :show-about?]))
+(defonce !edn-import-text (r/cursor state/!app [:ui :edn-import-text]))
+(defonce !edn-import-error (r/cursor state/!app [:ui :edn-import-error]))

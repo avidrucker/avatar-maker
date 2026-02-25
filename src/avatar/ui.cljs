@@ -1,10 +1,20 @@
 (ns avatar.ui
-  (:require [avatar.db :as db]
+  (:require [avatar.state :as state]
             [avatar.render :as render]
             [avatar.storage :as storage]
             [avatar.config :as cfg]
             [avatar.icons :as icons]
             [reagent.core :as r]))
+
+;; -------------------------
+;; UI namespace: UI components and controls for avatar maker app.
+;;
+;; - Reads spec from state/spec in main-panel.
+;; - Uses state/ui for active feature, other subcategory, footer toggles, and EDN import/error reads.
+;; - Uses state/swap-spec! for all spec edits.
+;; - Uses state/swap-ui! for tab/toggle/input updates.
+;; - Pagination now reads/writes [:ui :ui-pages] through state helpers.
+;; -------------------------
 
 ;; -------------------------
 ;; Pagination (v016 version)
@@ -29,17 +39,21 @@
      :total total}))
 
 (defn page-get [k]
-  (get @db/!ui-pages k 0))
+  (get-in (state/ui) [:ui-pages k] 0))
 
 (defn page-prev! [k]
-  (swap! db/!ui-pages update k (fnil (fn [p] (max 0 (dec p))) 0)))
+  (state/swap-ui! update :ui-pages
+                  (fn [pages]
+                    (update (or pages {}) k (fnil (fn [p] (max 0 (dec p))) 0)))))
 
 (defn page-next! [k pages]
-  (swap! db/!ui-pages update k
-         (fnil (fn [p]
-                 (let [last (max 0 (dec (or pages 1)))]
-                   (min last (inc p))))
-               0)))
+  (state/swap-ui! update :ui-pages
+                  (fn [page-map]
+                    (update (or page-map {}) k
+                            (fnil (fn [p]
+                                    (let [last (max 0 (dec (or pages 1)))]
+                                      (min last (inc p))))
+                                  0)))))
 
 (defn pager [page-key pages]
   (when (> pages 1)
@@ -104,7 +118,7 @@
               :background "#fff"
               :border-radius 10
               :cursor "pointer"}
-      :on-click #(swap! db/!spec assoc-in [:parts :head :shape] shape)}
+      :on-click #(state/swap-spec! assoc-in [:parts :head :shape] shape)}
      (head-preview-svg shape (get-in spec [:parts :head :skin]))]))
 
 (defn head-shape-entries []
@@ -147,7 +161,7 @@
           [color-swatch-button
            {:selected? (= selected-skin (:key swatch))
             :swatch swatch
-            :on-click #(swap! db/!spec assoc-in
+            :on-click #(state/swap-spec! assoc-in
                               [:parts :head :skin]
                               (:key swatch))}]))]]]))
 
@@ -214,7 +228,7 @@
                     :background "#fff"
                     :border-radius 10
                     :cursor "pointer"}
-            :on-click #(swap! db/!spec assoc-in [:parts :hair :shape] k)}
+            :on-click #(state/swap-spec! assoc-in [:parts :hair :shape] k)}
            (hair-preview-svg spec k)]))]]]))
 
 (defn hair-swatch-panel [spec]
@@ -233,7 +247,7 @@
           [color-swatch-button
            {:selected? (= selected-color (:key swatch))
             :swatch swatch
-            :on-click #(swap! db/!spec assoc-in
+            :on-click #(state/swap-spec! assoc-in
                               [:parts :hair :color]
                               (:key swatch))}]))]]]))
 
@@ -261,7 +275,7 @@
               :background "#fff"
               :border-radius 10
               :cursor "pointer"}
-      :on-click #(swap! db/!spec assoc-in [:parts :eyes :shape] shape)}
+      :on-click #(state/swap-spec! assoc-in [:parts :eyes :shape] shape)}
      (eye-preview-svg shape iris)]))
 
 (defn eye-shape-panel [spec]
@@ -294,7 +308,7 @@
           [color-swatch-button
            {:selected? (= selected-iris (:key swatch))
             :swatch swatch
-            :on-click #(swap! db/!spec assoc-in
+            :on-click #(state/swap-spec! assoc-in
                               [:parts :eyes :iris]
                               (:key swatch))}]))]]]))
 
@@ -348,7 +362,7 @@
   [path delta]
   (let [cfg-key (path->cfg-key path)
         step (step-of cfg-key)]
-    (swap! db/!spec update-in path
+    (state/swap-spec! update-in path
            (fnil (fn [v]
                    (let [next (+ v delta)
                          clamped (render/clamp-cfg cfg-key next)]
@@ -396,7 +410,7 @@
               :background "#fff"
               :border-radius 10
               :cursor "pointer"}
-      :on-click #(swap! db/!spec assoc-in [:parts :brows :shape] shape)}
+      :on-click #(state/swap-spec! assoc-in [:parts :brows :shape] shape)}
      (brow-preview-svg shape brow-color)]))
 
 (defn brows-nudge-controls []
@@ -494,7 +508,7 @@
               :background "#fff"
               :border-radius 10
               :cursor "pointer"}
-      :on-click #(swap! db/!spec assoc-in [:parts :nose :shape] shape)}
+      :on-click #(state/swap-spec! assoc-in [:parts :nose :shape] shape)}
      (nose-preview-svg shape)]))
 
 (defn nose-shape-panel [spec]
@@ -555,7 +569,7 @@
               :background "#fff"
               :border-radius 10
               :cursor "pointer"}
-      :on-click #(swap! db/!spec assoc-in [:parts :mouth :shape] shape)}
+      :on-click #(state/swap-spec! assoc-in [:parts :mouth :shape] shape)}
      (mouth-preview-svg shape lip)]))
 
 (defn mouth-shape-panel [spec]
@@ -586,7 +600,7 @@
           [color-swatch-button
            {:selected? (= selected-color (:key swatch))
             :swatch swatch
-            :on-click #(swap! db/!spec assoc-in
+            :on-click #(state/swap-spec! assoc-in
                               [:parts :mouth :color]
                               (:key swatch))}]))]]]))
 
@@ -640,7 +654,7 @@
           [color-swatch-button
            {:selected? (= selected-color (:key swatch))
             :swatch swatch
-           :on-click #(swap! db/!spec assoc-in
+           :on-click #(state/swap-spec! assoc-in
                               [:parts :brows :color]
                               (:key swatch))}]))]]]))
 
@@ -675,7 +689,7 @@
               :background "#fff"
               :border-radius 10
               :cursor "pointer"}
-      :on-click #(swap! db/!spec assoc-in [:parts :other :glasses :shape] shape)}
+      :on-click #(state/swap-spec! assoc-in [:parts :other :glasses :shape] shape)}
      (glasses-preview-svg spec shape)]))
 
 (defn glasses-shape-panel [spec]
@@ -710,7 +724,7 @@
           [color-swatch-button
            {:selected? (= selected (:key swatch))
             :swatch swatch
-            :on-click #(swap! db/!spec assoc-in
+            :on-click #(state/swap-spec! assoc-in
                               [:parts :other :glasses :color]
                               (:key swatch))}]))]]]))
 
@@ -744,12 +758,12 @@
   [:div {:class "mb2 flex flex-wrap justify-center"}
    (doall
     (for [{:keys [value label icon]} other-subcategory-tabs]
-      (let [active? (= @db/!other-subcategory value)]
+      (let [active? (= (get-in (state/ui) [:other-subcategory]) value)]
         ^{:key (name value)}
         [:button
          {:title label
           :aria-label label
-          :on-click #(reset! db/!other-subcategory value)
+          :on-click #(state/swap-ui! assoc :other-subcategory value)
           :class "pa2 pa0-ns w3-m h3-m w4-l h4-l"
           :style {:display "flex"
                   :align-items "center"
@@ -759,7 +773,7 @@
          icon])))])
 
 (defn other-feature-sections [spec]
-  (case @db/!other-subcategory
+  (case (get-in (state/ui) [:other-subcategory])
     :glasses
     {:shape [glasses-shape-panel spec]
      :swatches [glasses-swatch-panel spec]
@@ -785,12 +799,12 @@
    {:value :other :label "Other" :icon (icons/icon-other "black")}])
 
 (defn feature-tab-btn [{:keys [value label icon]}]
-  (let [active? (= @db/!active-feature value)]
+  (let [active? (= (get-in (state/ui) [:active-feature]) value)]
     ^{:key (name value)}
     [:button
      {:title label
       :aria-label label
-      :on-click #(reset! db/!active-feature value)
+      :on-click #(state/swap-ui! assoc :active-feature value)
       :class "pa2 pa0-ns w3-m h3-m w4-l h4-l"
       :style {:display "flex"
               :align-items "center"
@@ -856,7 +870,7 @@
 ;; -------------------------
 
 (defn active-feature-sections [spec]
-  (case @db/!active-feature
+  (case (get-in (state/ui) [:active-feature])
     :head  {:shape [head-shape-panel spec]
             :swatches [head-swatch-panel spec]}
     :hair  {:shape [hair-shape-panel spec]
@@ -878,23 +892,23 @@
     {:shape [:div "Select a feature"]}))
 
 (defn footer-tools-panel []
-  (let [show-svg? @db/!show-svg?
-        show-edn? @db/!show-edn?
-        show-about? @db/!show-about?
+  (let [show-svg? (get-in (state/ui) [:show-svg?])
+        show-edn? (get-in (state/ui) [:show-edn?])
+        show-about? (get-in (state/ui) [:show-about?])
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
     [:div
      {:class "ba b--black-20 br3 pa3 mt2 fixed-ns bottom-0 left-0 right-0"}
      [:div {:class "flex flex-wrap items-center"}
-      [:button {:on-click #(reset! db/!spec cfg/default-spec)} "Reset"]
+      [:button {:on-click #(state/reset-spec! cfg/default-spec)} "Reset"]
       [:button {:class "ml2"
-                :on-click #(reset! db/!show-svg? (not show-svg?))}
+                :on-click #(state/swap-ui! update :show-svg? not)}
        (if show-svg? "Hide SVG source" "Show SVG source")]
       [:button {:class "ml2"
-                :on-click #(reset! db/!show-edn? (not show-edn?))}
+                :on-click #(state/swap-ui! update :show-edn? not)}
        (if show-edn? "Hide EDN" "Show EDN")]
       [:button {:class "ml2"
-                :on-click #(reset! db/!show-about? (not show-about?))}
+                :on-click #(state/swap-ui! update :show-about? not)}
        (if show-about? "Hide About" "About")]]
 
      (when show-about?
@@ -935,28 +949,29 @@
                             :font-family "monospace"
                             :font-size "11px"}
                     :rows 6
-                    :value @db/!edn-import-text
+                    :value (get-in (state/ui) [:edn-import-text])
                     :on-input
                     (fn [e]
-                      (reset! db/!edn-import-error nil)
-                      (reset! db/!edn-import-text (.. e -target -value)))}]
+                      (state/swap-ui! assoc
+                                      :edn-import-error nil
+                                      :edn-import-text (.. e -target -value)))}]
 
         [:div {:style {:margin-top "8px"}}
          [:button {:on-click #(storage/load-edn-into-spec!)}
           "Load EDN"]]
 
-        (when @db/!edn-import-error
+        (when (get-in (state/ui) [:edn-import-error])
           [:div {:style {:margin-top "8px"
                          :color "#a00"
                          :font-size 12}}
-           @db/!edn-import-error])])]))
+           (get-in (state/ui) [:edn-import-error])])])]))
 
 ;; -------------------------
 ;; Root UI
 ;; -------------------------
 
 (defn main-panel []
-  (let [spec @db/!spec
+  (let [spec (state/spec)
         sections (active-feature-sections spec)
         {:keys [prefix shape swatches nudge]} sections]
     [:div {:class "pa1 relative"}

@@ -1,9 +1,21 @@
 (ns avatar.storage
   (:require [avatar.config :as cfg]
             [avatar.db :as db]
+            [avatar.state :as state]
             [avatar.render :as render]
             [cljs.reader :as reader]
             [clojure.string :as str]))
+
+;; -------------------------
+;; Storage namespace: Handles persistence of avatar spec and UI state to localStorage.
+;; 
+;; - Initializes with state/reset-spec! and state/swap-ui!.
+;; - Persists via a single watch on state/!app (::persist-app) with field-level diffs for:
+;;   - spec
+;;   - show-svg flag
+;;   - active feature
+;; - Uses state/spec/state/ui for SVG/EDN/export/import logic.
+;; -------------------------
 
 (defn load-spec []
   (try
@@ -79,10 +91,10 @@
     (str node)))
 
 (defn svg-source []
-  (hiccup->svg-str (render/avatar->hiccup @db/!spec)))
+  (hiccup->svg-str (render/avatar->hiccup (state/spec))))
 
 (defn edn-export []
-  (-> (pr-str @db/!spec)
+  (-> (pr-str (state/spec))
       (str/replace "," "")))
 
 (defn valid-spec? [x]
@@ -94,36 +106,40 @@
 
 (defn load-edn-into-spec! []
   (try
-    (let [x (reader/read-string @db/!edn-import-text)]
+    (let [x (reader/read-string (get-in (state/ui) [:edn-import-text]))]
       (if (valid-spec? x)
         (do
-          (reset! db/!edn-import-error nil)
-          (reset! db/!spec (render/normalize-spec x))
-          (reset! db/!edn-import-text "")
+          (state/swap-ui! assoc :edn-import-error nil :edn-import-text "")
+          (state/reset-spec! (render/normalize-spec x))
           true)
         (do
-          (reset! db/!edn-import-error
-                  "EDN parsed, but it doesn't look like a valid avatar spec (missing :parts/:head/:eyes/:hair).")
+          (state/swap-ui! assoc :edn-import-error
+                          "EDN parsed, but it doesn't look like a valid avatar spec (missing :parts/:head/:eyes/:hair).")
           false)))
     (catch :default e
-      (reset! db/!edn-import-error
-              (str "Could not read EDN: " (.-message e)))
+      (state/swap-ui! assoc :edn-import-error
+                      (str "Could not read EDN: " (.-message e)))
       false)))
 
 (defn init! []
   ;; Restore persisted values once per init and keep them synced.
-  (reset! db/!spec (or (load-spec) cfg/default-spec))
-  (reset! db/!show-svg? (load-bool db/show-svg-key false))
-  (reset! db/!active-feature (load-active-feature :head))
+  (state/reset-spec! (or (load-spec) cfg/default-spec))
+  (state/swap-ui! assoc
+                  :show-svg? (load-bool db/show-svg-key false)
+                  :active-feature (load-active-feature :head))
 
-  (add-watch db/!spec ::persist-spec
-             (fn [_ _ _ new-spec]
-               (save-spec! new-spec)))
-
-  (add-watch db/!show-svg? ::persist-show-svg
-             (fn [_ _ _ new-v]
-               (save-bool! db/show-svg-key new-v)))
-
-  (add-watch db/!active-feature ::persist-active-feature
-             (fn [_ _ _ new-feature]
-               (save-active-feature! new-feature))))
+  (remove-watch state/!app ::persist-app)
+  (add-watch state/!app ::persist-app
+             (fn [_ _ old-app new-app]
+               (let [old-spec (:spec old-app)
+                     new-spec (:spec new-app)
+                     old-show-svg? (get-in old-app [:ui :show-svg?])
+                     new-show-svg? (get-in new-app [:ui :show-svg?])
+                     old-feature (get-in old-app [:ui :active-feature])
+                     new-feature (get-in new-app [:ui :active-feature])]
+                 (when (not= old-spec new-spec)
+                   (save-spec! new-spec))
+                 (when (not= old-show-svg? new-show-svg?)
+                   (save-bool! db/show-svg-key new-show-svg?))
+                 (when (not= old-feature new-feature)
+                   (save-active-feature! new-feature))))))
