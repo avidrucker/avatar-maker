@@ -18,7 +18,7 @@ body {
     display: flex;
 }
 
-@container mobile-subpanel (max-width: 22.999em) {
+@container mobile-subpanel (max-width: 23.499em) {
     .mobile-tabbed-subpanel {
         display: block;
     }
@@ -28,7 +28,7 @@ body {
     }
 }
 
-@container mobile-subpanel (min-width: 23em) {
+@container mobile-subpanel (min-width: 23.5em) {
     .mobile-tabbed-subpanel {
         display: none;
     }
