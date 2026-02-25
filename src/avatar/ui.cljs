@@ -807,7 +807,7 @@
   (let [spec @db/!spec
         sections (active-feature-sections spec)
         {:keys [shape swatches nudge]} sections]
-    [:div {:class "pa2 relative"}
+    [:div {:class "pa1 relative"}
 
      [:div
       ;; feature tab buttons that render for tablet and desktop 
