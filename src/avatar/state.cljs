@@ -9,6 +9,8 @@
    :show-edn? false
    :show-about? false
    :show-presets? false
+   :editing-name? false
+   :name-draft ""
    :edn-import-text ""
    :edn-import-error nil})
 

@@ -4,6 +4,7 @@
             [avatar.storage :as storage]
             [avatar.config :as cfg]
             [avatar.icons :as icons]
+            [clojure.string :as str]
             [reagent.core :as r]))
 
 ;; -------------------------
@@ -927,6 +928,55 @@
        (for [[_ preset] (:items paged)]
          (preset-button preset current-spec)))]]))
 
+(defn current-name-id [spec]
+  (or (:name-id spec) "Unnamed"))
+
+(defn start-name-edit! [spec]
+  (state/swap-ui! assoc
+                  :editing-name? true
+                  :name-draft (current-name-id spec)))
+
+(defn save-name-edit! [spec]
+  (let [draft (str/trim (or (get-in (state/ui) [:name-draft]) ""))
+        next-name (if (seq draft) draft (current-name-id spec))]
+    (state/swap-spec! assoc :name-id next-name)
+    (state/swap-ui! assoc :editing-name? false :name-draft "")))
+
+(defn cancel-name-edit! []
+  (state/swap-ui! assoc :editing-name? false :name-draft ""))
+
+(defn avatar-name-editor [spec]
+  (let [editing? (get-in (state/ui) [:editing-name?])
+        display-name (current-name-id spec)]
+    (if editing?
+      [:input
+       {:type "text"
+        :value (get-in (state/ui) [:name-draft])
+        :auto-focus true
+        :max-length 60
+        :style {:min-width "110px"
+                :max-width "180px"
+                :font-size 12}
+        :on-change #(state/swap-ui! assoc :name-draft (.. % -target -value))
+        :on-blur #(save-name-edit! spec)
+        :on-key-down (fn [e]
+                       (case (.-key e)
+                         "Enter" (do (.preventDefault e)
+                                     (.blur (.-target e)))
+                         "Escape" (do (.preventDefault e)
+                                      (cancel-name-edit!))
+                         nil))}]
+      [:span
+       {:title "Click to rename avatar"
+        :style {:font-size 12
+                :cursor "text"
+                :padding "2px 6px"
+                :border "1px solid #ccc"
+                :border-radius 6
+                :background "white"}
+        :on-click #(start-name-edit! spec)}
+       display-name])))
+
 (defn footer-tools-panel []
   (let [show-svg? (get-in (state/ui) [:show-svg?])
         show-edn? (get-in (state/ui) [:show-edn?])
@@ -1031,9 +1081,13 @@
       {:class "flex flex-column flex-row-ns items-start justify-center-ns"}
 
       [:div
-       {:class "avatar-preview-container w-100 w-50-ns measure-narrow mr-auto ml-auto ba b--black-20 br3 mb2 mb0-ns mr2-ns ml0-ns"
+       {:class "avatar-preview-container relative w-100 w-50-ns measure-narrow mr-auto ml-auto ba b--black-20 br3 mb2 mb0-ns mr2-ns ml0-ns"
         :style {:flex "0 0 auto"}}
-       [render/avatar->hiccup spec]] 
+       [:div {:class "absolute top-0 right-0 pa2 dn-ns"}
+        [avatar-name-editor spec]]
+       [render/avatar->hiccup spec]
+       [:div {:class "dn db-ns tc pb2"}
+        [avatar-name-editor spec]]] 
 
       [:div
        {:class "mobile-subpanel-container w-100 flex-ns flex-column ba b--black-20 br3 pa2 mr-auto ml-auto mr0-ns ml0-ns"}
