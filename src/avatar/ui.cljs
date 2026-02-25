@@ -744,6 +744,7 @@
 (defn footer-tools-panel []
   (let [show-svg? @db/!show-svg?
         show-edn? @db/!show-edn?
+        show-about? @db/!show-about?
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
     [:div
@@ -755,7 +756,23 @@
        (if show-svg? "Hide SVG source" "Show SVG source")]
       [:button {:class "ml2"
                 :on-click #(reset! db/!show-edn? (not show-edn?))}
-       (if show-edn? "Hide EDN" "Show EDN")]]
+       (if show-edn? "Hide EDN" "Show EDN")]
+      [:button {:class "ml2"
+                :on-click #(reset! db/!show-about? (not show-about?))}
+       (if show-about? "Hide About" "About")]]
+
+     (when show-about?
+       [:div {:class "mt3"}
+        [:div {:style {:font-size 12 :line-height 1.5}}
+         [:div [:strong "Avatar Maker"] " (v016)"]
+         [:div "Author: Avi Drucker"]
+         [:div "Built with ClojureScript, shadow-cljs, and Reagent."]
+         [:div
+          "GitHub: "
+          [:a {:href "https://github.com/avidrucker/avatar-maker"
+               :target "_blank"
+               :rel "noopener noreferrer"}
+           "github.com/avidrucker/avatar-maker"]]]])
 
      (when show-svg?
        [:div {:class "mt3 mb3"}

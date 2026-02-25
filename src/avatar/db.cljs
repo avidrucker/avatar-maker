@@ -16,5 +16,6 @@
 ;; Footer tool state
 (defonce !show-svg? (r/atom false))
 (defonce !show-edn? (r/atom false))
+(defonce !show-about? (r/atom false))
 (defonce !edn-import-text (r/atom ""))
 (defonce !edn-import-error (r/atom nil))
