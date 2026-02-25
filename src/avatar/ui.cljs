@@ -765,16 +765,16 @@
       {:class "dn db-ns ba b--black-20 br3 mb2"}
       [feature-tab-buttons-row]]
 
+     [:div {:class "feature-tab-buttons-row-mobile ba b--black-20 br3 pa2 pa3-l db dn-ns mr-auto ml-auto mr0-ns ml0-ns mb2 mb0-ns"}
+      [feature-tab-buttons-row]]
+
      [:div
       {:class "flex flex-column flex-row-ns items-start justify-center-ns"}
 
       [:div
        {:class "w-100 w-50-ns measure-narrow mr-auto ml-auto ba b--black-20 br3 mb2 mb0-ns mr2-ns ml0-ns"
         :style {:flex "0 0 auto"}}
-       [render/avatar->hiccup spec]]
-      
-      [:div {:class "ba b--black-20 br3 pa2 pa3-l db dn-ns mr-auto ml-auto mr0-ns ml0-ns mb2 mb0-ns"}
-       [feature-tab-buttons-row]]
+       [render/avatar->hiccup spec]] 
 
       [:div
        {:class "ba b--black-20 br3 pa2 pa3-l mr-auto ml-auto mr0-ns ml0-ns"}
@@ -785,6 +785,6 @@
          (when swatches
            [:div {:class "mb2"} swatches])
          (when nudge
-           [:div nudge])]]]]
+           [:div nudge])]]]] 
 
      [footer-tools-panel]]))
