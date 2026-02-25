@@ -8,6 +8,7 @@
    :show-svg? false
    :show-edn? false
    :show-about? false
+   :show-presets? false
    :edn-import-text ""
    :edn-import-error nil})
 

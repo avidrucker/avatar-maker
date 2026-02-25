@@ -891,10 +891,47 @@
             (other-feature-sections spec))
     {:shape [:div "Select a feature"]}))
 
+(defn preset-button [preset current-spec]
+  (let [name-id (or (:name-id preset) "Preset")
+        selected? (= (:name-id current-spec) (:name-id preset))]
+    ^{:key (str "preset-" name-id)}
+    [:button
+     {:title (str "Load preset: " name-id)
+      :aria-label (str "Load preset: " name-id)
+      :on-click #(state/reset-spec! (render/normalize-spec preset))
+      :style {:display "flex"
+              :flex-direction "column"
+              :align-items "center"
+              :justify-content "center"
+              :width 88
+              :height 102
+              :padding 4
+              :border (if selected? "2px solid #333" "1px solid #ccc")
+              :background "#fff"
+              :border-radius 8
+              :cursor "pointer"}}
+     [render/avatar->hiccup preset {:width 72 :height 72}]
+     [:span {:style {:font-size 12 :margin-top 2}} name-id]]))
+
+(defn presets-panel []
+  (let [current-spec (state/spec)
+        entries (mapv (fn [p] [(:name-id p) p]) cfg/presets)
+        paged (paginate entries (page-get :preset/page) 9)]
+    [:div {:class "mt3"}
+     [:div {:style {:font-size 12 :margin-bottom "6px"}} "Presets"]
+     [pager :preset/page (:pages paged)]
+     [:div {:style {:display "grid"
+                    :grid-template-columns "repeat(3, 88px)"
+                    :gap 8}}
+      (doall
+       (for [[_ preset] (:items paged)]
+         (preset-button preset current-spec)))]]))
+
 (defn footer-tools-panel []
   (let [show-svg? (get-in (state/ui) [:show-svg?])
         show-edn? (get-in (state/ui) [:show-edn?])
         show-about? (get-in (state/ui) [:show-about?])
+        show-presets? (get-in (state/ui) [:show-presets?])
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
     [:div
@@ -909,7 +946,13 @@
        (if show-edn? "Hide EDN" "Show EDN")]
       [:button {:class "ml2"
                 :on-click #(state/swap-ui! update :show-about? not)}
-       (if show-about? "Hide About" "About")]]
+       (if show-about? "Hide About" "About")]
+      [:button {:class "ml2"
+                :on-click #(state/swap-ui! update :show-presets? not)}
+       (if show-presets? "Hide Presets" "Presets")]]
+
+     (when show-presets?
+       [presets-panel])
 
      (when show-about?
        [:div {:class "mt3"}

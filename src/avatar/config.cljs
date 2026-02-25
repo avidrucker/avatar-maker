@@ -159,7 +159,8 @@
      {:key k :label (name k) :hex (get shades-colors k)})))
 
 (def default-spec
-  {:version 16 
+  {:version 16
+   :name-id "Mary"
    :parts 
    {:head {:shape :egg :skin :light-cream} 
     :eyes {:spacing 0.54 :size 1 :y-offset 12 :rotation 0 :shape :002 :iris :brown} 
@@ -174,3 +175,33 @@
                       :scale 1.0
                       :y-offset 0}}}} 
   )
+
+(def presets
+  [default-spec
+   {:version 16
+    :name-id "Bob"
+    :parts
+    {:head {:shape :blocky :skin :light-cream}
+     :eyes {:spacing 0.54 :size 1 :y-offset 18 :rotation 0 :shape :006 :iris :brown}
+     :hair {:shape :two :color :espresso}
+     :brows {:shape :001 :color :jet-black :size 1 :x-offset -4 :y-offset 12 :rotation 16}
+     :nose {:shape :two :stroke "black" :size 1.04 :y-offset 9}
+     :mouth {:shape :four :color :black :size 0.94 :y-offset 20}
+     :ears {:shape :none}
+     :other {:category :glasses
+             :glasses {:shape :glasses_001 :color :silver :scale 1.1 :y-offset 0}}}}
+   {:version 16
+    :name-id "Kendra"
+    :parts
+    {:head {:shape :average :skin :deep-brown}
+     :eyes {:spacing 0.58 :size 1 :y-offset 12 :rotation 6 :shape :010 :iris :black}
+     :hair {:shape :three :color :jet-black}
+     :brows {:shape :005 :color :jet-black :size 1.04 :x-offset -8 :y-offset 12 :rotation 16}
+     :nose {:shape :nine :stroke "black" :size 1.04 :y-offset 17}
+     :mouth {:shape :sixteen :color :black :size 0.94 :y-offset 14}
+     :ears {:shape :none}
+     :other {:category :glasses
+             :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+   
+   {:version 16 :name-id "Nameless" :parts {:head {:shape :egg :skin :light-cream} :eyes {:spacing 0.54 :size 1 :y-offset 12 :rotation 0 :shape :001 :iris :gray} :hair {:shape :bald :color :espresso} :brows {:shape :004 :color :chestnut :size 1 :x-offset -8 :y-offset 12 :rotation 16} :nose {:shape :four :stroke "black" :size 0.88 :y-offset -1} :mouth {:shape :three :color :natural :size 0.82 :y-offset 10} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+   ])

@@ -1160,22 +1160,22 @@
 
 (defn avatar->hiccup
   "Layering: back hair -> ears -> head -> mouth -> nose -> eyes -> brows -> front hair -> glasses."
-  [spec]
-  (let [spec* (normalize-spec spec)
-        {:keys [head eyes ears mouth nose hair brows]} (:parts spec*)
-        {:keys [back front front2]} (hair-svg hair)]
-    [:svg {:xmlns "http://www.w3.org/2000/svg"
-           :viewBox "0 0 512 512"
-           ;; :width 200
-           ;; :height 200
-           }
-     back
-     (ears-svg ears head)
-     (head-svg head)
-     (mouth-svg mouth)
-     (nose-svg nose head)
-     (eyes-svg eyes)
-     (brows-svg brows)
-     front
-     front2
-     (glasses-svg (get-in spec* [:parts :other :glasses]))]))
+  ([spec]
+   (avatar->hiccup spec {}))
+  ([spec svg-attrs]
+   (let [spec* (normalize-spec spec)
+         {:keys [head eyes ears mouth nose hair brows]} (:parts spec*)
+         {:keys [back front front2]} (hair-svg hair)
+         base-svg-attrs {:xmlns "http://www.w3.org/2000/svg"
+                         :viewBox "0 0 512 512"}]
+     [:svg (merge base-svg-attrs svg-attrs)
+      back
+      (ears-svg ears head)
+      (head-svg head)
+      (mouth-svg mouth)
+      (nose-svg nose head)
+      (eyes-svg eyes)
+      (brows-svg brows)
+      front
+      front2
+      (glasses-svg (get-in spec* [:parts :other :glasses]))])))

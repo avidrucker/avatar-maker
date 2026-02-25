@@ -17,5 +17,6 @@
 (defonce !show-svg? (r/cursor state/!app [:ui :show-svg?]))
 (defonce !show-edn? (r/cursor state/!app [:ui :show-edn?]))
 (defonce !show-about? (r/cursor state/!app [:ui :show-about?]))
+(defonce !show-presets? (r/cursor state/!app [:ui :show-presets?]))
 (defonce !edn-import-text (r/cursor state/!app [:ui :edn-import-text]))
 (defonce !edn-import-error (r/cursor state/!app [:ui :edn-import-error]))
