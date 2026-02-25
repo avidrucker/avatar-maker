@@ -826,14 +826,14 @@
        [render/avatar->hiccup spec]] 
 
       [:div
-       {:class "ba b--black-20 br3 pa2 pa3-l mr-auto ml-auto mr0-ns ml0-ns"}
+       {:class "mobile-subpanel-container ba b--black-20 br3 pa2 pa3-l mr-auto ml-auto mr0-ns ml0-ns"}
        [:div {:class "db dn-ns"}
         [mobile-subpanel-tabs-row sections]
         [:div {:class "flex items-start justify-center"}
          (mobile-active-subpanel-content sections)]]
 
        [:div
-        {:class "dn controls-layout measure flex-ns flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
+        {:class "dn horizontal-tab-container controls-layout measure flex-ns flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
         [:div {:class "shape-pane mr2 pb2"} shape]
         [:div {:class "meta-pane ml2-l"}
          (when swatches
