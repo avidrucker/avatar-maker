@@ -3,6 +3,41 @@ body {
     margin: 0;
 }
 
+.mobile-subpanel-container {
+    container-type: inline-size;
+    container-name: mobile-subpanel;
+    min-width: 0;
+}
+
+/* Default to desktop/tablet full controls; container query will override when narrow. */
+.mobile-tabbed-subpanel {
+    display: none;
+}
+
+.horizontal-tab-container {
+    display: flex;
+}
+
+@container mobile-subpanel (max-width: 22.999em) {
+    .mobile-tabbed-subpanel {
+        display: block;
+    }
+
+    .horizontal-tab-container {
+        display: none;
+    }
+}
+
+@container mobile-subpanel (min-width: 23em) {
+    .mobile-tabbed-subpanel {
+        display: none;
+    }
+
+    .horizontal-tab-container {
+        display: flex;
+    }
+}
+
 .shape-pane {
     order: 1;
 }

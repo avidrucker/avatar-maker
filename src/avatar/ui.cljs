@@ -674,8 +674,8 @@
 (defonce !mobile-subpanel (r/atom :shape))
 
 (def mobile-subpanel-tabs
-  [{:value :shape :label "Shapes"}
-   {:value :swatches :label "Colors"}
+  [{:value :shape :label "Shape"}
+   {:value :swatches :label "Color"}
    {:value :nudge :label "Adjust"}])
 
 (defn available-mobile-subpanels [{:keys [shape swatches nudge]}]
@@ -704,9 +704,8 @@
             :aria-label label
             :disabled (not enabled?)
             :on-click #(reset! !mobile-subpanel value)
-            :class "mr2 mb2"
-            :style {:padding "6px 10px"
-                    :opacity (if enabled? 1 0.35)
+            :class "pa2"
+            :style {:opacity (if enabled? 1 0.35)
                     :border (if selected? "2px solid blue" "1px solid gray")
                     :background (if selected? "#eef5ff" "white")}}
            label])))]))
@@ -826,14 +825,14 @@
        [render/avatar->hiccup spec]] 
 
       [:div
-       {:class "mobile-subpanel-container ba b--black-20 br3 pa2 pa3-l mr-auto ml-auto mr0-ns ml0-ns"}
-       [:div {:class "db dn-ns"}
+       {:class "mobile-subpanel-container w-100 ba b--black-20 br3 pa2 pa3-l mr-auto ml-auto mr0-ns ml0-ns"}
+       [:div {:class "mobile-tabbed-subpanel"}
         [mobile-subpanel-tabs-row sections]
         [:div {:class "flex items-start justify-center"}
          (mobile-active-subpanel-content sections)]]
 
        [:div
-        {:class "dn horizontal-tab-container controls-layout measure flex-ns flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
+        {:class "horizontal-tab-container controls-layout measure flex flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
         [:div {:class "shape-pane mr2 pb2"} shape]
         [:div {:class "meta-pane ml2-l"}
          (when swatches
