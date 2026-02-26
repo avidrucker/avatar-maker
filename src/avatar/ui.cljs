@@ -985,19 +985,20 @@
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
     [:footer
-     {:class "footer bg-white ba b--black-20 br3 pa3 mt2 fixed-ns bottom-0 left-0 right-0"}
+     {:class "footer bg-white ba b--black-20 br3 pa1 mt2 fixed-ns bottom-0 left-0 right-0"}
      [:div {:class "flex flex-wrap items-center"}
-      [:button {:on-click #(state/reset-spec! cfg/default-spec)} "Reset"]
-      [:button {:class "ml2"
+      [:button {:class "ma1"
+                :on-click #(state/reset-spec! cfg/default-spec)} "Reset"]
+      [:button {:class "ma1"
                 :on-click #(state/swap-ui! update :show-svg? not)}
        (if show-svg? "Hide SVG source" "Show SVG source")]
-      [:button {:class "ml2"
+      [:button {:class "ma1"
                 :on-click #(state/swap-ui! update :show-edn? not)}
        (if show-edn? "Hide EDN" "Show EDN")]
-      [:button {:class "ml2"
+      [:button {:class "ma1"
                 :on-click #(state/swap-ui! update :show-about? not)}
        (if show-about? "Hide About" "About")]
-      [:button {:class "ml2"
+      [:button {:class "ma1"
                 :on-click #(state/swap-ui! update :show-presets? not)}
        (if show-presets? "Hide Presets" "Presets")]]
 
