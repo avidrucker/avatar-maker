@@ -23,6 +23,11 @@ body {
     text-align: center;
 }
 
+.preset-delete-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 @container mobile-subpanel (max-width: 23.499em) {
     .mobile-tabbed-subpanel {
         display: block;
@@ -71,6 +76,17 @@ body {
 }
 
 @media screen and (min-width: 30em) {
+    .preset-delete-btn {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 120ms ease;
+    }
+
+    .preset-item:hover .preset-delete-btn {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
     .w6-ns {
         width: 32rem;
     }

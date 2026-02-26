@@ -9,6 +9,7 @@
    :show-edn? false
    :show-about? false
    :show-presets? false
+   :hidden-preset-ids []
    :editing-name? false
    :name-draft ""
    :edn-import-text ""

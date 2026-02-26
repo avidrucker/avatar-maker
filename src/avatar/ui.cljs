@@ -1039,39 +1039,62 @@
 
 (defn preset-button [preset current-spec]
   (let [name-id (or (:name-id preset) "Preset")
-        selected? (= (:name-id current-spec) (:name-id preset))]
-    ^{:key (str "preset-" name-id)}
-    [:button
-     {:title (str "Load preset: " name-id)
-      :aria-label (str "Load preset: " name-id)
-      :on-click #(state/reset-spec! (render/normalize-spec preset))
-      :style {:display "flex"
-              :flex-direction "column"
-              :align-items "center"
-              :justify-content "center"
-              :width 88
-              :height 102
-              :padding 4
-              :border (if selected? "2px solid #333" "1px solid #ccc")
-              :background "#fff"
-              :border-radius 8
-              :cursor "pointer"}}
-     [render/avatar->hiccup preset {:width 72 :height 72}]
-     [:span {:style {:font-size 12 :margin-top 2}} name-id]]))
+        preset-id (:preset-id preset)
+        selected? (= (:preset-id current-spec) preset-id)]
+    ^{:key (str "preset-" preset-id)}
+    [:div {:class "preset-item"
+           :style {:position "relative"
+                   :width 88}}
+     [:button
+      {:title (str "Load preset: " name-id)
+       :aria-label (str "Load preset: " name-id)
+       :on-click #(state/reset-spec! (render/normalize-spec preset))
+       :style {:display "flex"
+               :flex-direction "column"
+               :align-items "center"
+               :justify-content "center"
+               :width 88
+               :height 102
+               :padding 4
+               :border (if selected? "2px solid #333" "1px solid #ccc")
+               :background "#fff"
+               :border-radius 8
+               :cursor "pointer"}}
+      [render/avatar->hiccup preset {:width 72 :height 72}]
+      [:span {:style {:font-size 12 :margin-top 2}} name-id]]
+     [:button
+      {:title (str "Hide preset: " name-id)
+       :aria-label (str "Hide preset: " name-id)
+       :class "preset-delete-btn bn absolute top-0 right-0 w2 h2 bg-transparent"
+       :on-click #(state/swap-ui! update :hidden-preset-ids
+                                  (fn [ids]
+                                    (let [s (set (or ids []))]
+                                      (vec (conj s preset-id)))))
+       :style {:cursor "pointer"}}
+      "x"]]))
 
 (defn presets-panel []
   (let [current-spec (state/spec)
-        entries (mapv (fn [p] [(:name-id p) p]) cfg/presets)
+        hidden-ids (set (get-in (state/ui) [:hidden-preset-ids]))
+        visible-presets (->> cfg/presets
+                             (remove #(contains? hidden-ids (:preset-id %)))
+                             (sort-by (fn [p] (str/lower-case (or (:name-id p) ""))))
+                             vec)
+        entries (mapv (fn [p] [(:preset-id p) p]) visible-presets)
         paged (paginate entries (page-get :preset/page) 9)]
     [:div {:class "mt3"}
      [:div {:style {:font-size 12 :margin-bottom "6px"}} "Presets"]
-     [pager :preset/page (:pages paged)]
-     [:div {:style {:display "grid"
-                    :grid-template-columns "repeat(3, 88px)"
-                    :gap 8}}
-      (doall
-       (for [[_ preset] (:items paged)]
-         (preset-button preset current-spec)))]]))
+     (if (seq entries)
+       [:<>
+        [pager :preset/page (:pages paged)]
+        [:div {:style {:display "grid"
+                       :grid-template-columns "repeat(3, 88px)"
+                       :gap 8}}
+         (doall
+          (for [[_ preset] (:items paged)]
+            (preset-button preset current-spec)))]]
+       [:div {:style {:font-size 12 :opacity 0.7}}
+        "No visible presets."])]))
 
 (defn current-name-id [spec]
   (or (:name-id spec) "Unnamed"))

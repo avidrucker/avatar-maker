@@ -39,6 +39,17 @@
 (defn save-bool! [k v]
   (.setItem js/localStorage k (str (boolean v))))
 
+(defn load-json [k default]
+  (try
+    (if-let [s (.getItem js/localStorage k)]
+      (js->clj (js/JSON.parse s) :keywordize-keys true)
+      default)
+    (catch :default _
+      default)))
+
+(defn save-json! [k value]
+  (.setItem js/localStorage k (js/JSON.stringify (clj->js value))))
+
 (defn load-active-feature [default]
   (let [allowed #{:head :hair :brows :eyes :nose :mouth :other}
         raw (.getItem js/localStorage db/active-feature-key)
@@ -56,6 +67,13 @@
 
 (defn save-other-subcategory! [subcat]
   (.setItem js/localStorage db/other-subcategory-key (name subcat)))
+
+(defn load-hidden-preset-ids []
+  (let [v (load-json db/hidden-presets-key [])]
+    (if (sequential? v) (vec (filter string? v)) [])))
+
+(defn save-hidden-preset-ids! [ids]
+  (save-json! db/hidden-presets-key (vec (or ids []))))
 
 (defn attrs->str [m]
   (->> m
@@ -136,6 +154,7 @@
   (state/swap-ui! assoc
                   :show-svg? (load-bool db/show-svg-key false)
                   :show-presets? (load-bool db/show-presets-key false)
+                  :hidden-preset-ids (load-hidden-preset-ids)
                   :active-feature (load-active-feature :head)
                   :other-subcategory (load-other-subcategory :glasses))
 
@@ -151,7 +170,9 @@
                      old-feature (get-in old-app [:ui :active-feature])
                      new-feature (get-in new-app [:ui :active-feature])
                      old-subcat (get-in old-app [:ui :other-subcategory])
-                     new-subcat (get-in new-app [:ui :other-subcategory])]
+                     new-subcat (get-in new-app [:ui :other-subcategory])
+                     old-hidden-preset-ids (get-in old-app [:ui :hidden-preset-ids])
+                     new-hidden-preset-ids (get-in new-app [:ui :hidden-preset-ids])]
                  (when (not= old-spec new-spec)
                    (save-spec! new-spec))
                  (when (not= old-show-svg? new-show-svg?)
@@ -161,4 +182,6 @@
                  (when (not= old-feature new-feature)
                    (save-active-feature! new-feature))
                  (when (not= old-subcat new-subcat)
-                   (save-other-subcategory! new-subcat))))))
+                   (save-other-subcategory! new-subcat))
+                 (when (not= old-hidden-preset-ids new-hidden-preset-ids)
+                   (save-hidden-preset-ids! new-hidden-preset-ids))))))
