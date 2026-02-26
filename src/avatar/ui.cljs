@@ -5,8 +5,7 @@
             [avatar.config :as cfg]
             [avatar.ui.components :as comp]
             [avatar.icons :as icons]
-            [clojure.string :as str]
-            [reagent.core :as r]))
+            [clojure.string :as str]))
 
 ;; -------------------------
 ;; UI namespace: UI components and controls for avatar maker app.
@@ -965,8 +964,6 @@
     (for [tab-btn feature-tab-buttons]
       (feature-tab-btn tab-btn)))])
 
-(defonce !mobile-subpanel (r/atom :shape))
-
 (def mobile-subpanel-tabs
   [{:value :shape :label "Shape"}
    {:value :swatches :label "Color"}
@@ -980,7 +977,7 @@
 
 (defn active-mobile-subpanel [sections]
   (let [available (set (available-mobile-subpanels sections))
-        current @!mobile-subpanel
+        current (get-in (state/ui) [:mobile-subpanel])
         fallback (or (first (available-mobile-subpanels sections)) :shape)]
     (if (contains? available current) current fallback)))
 
@@ -997,7 +994,9 @@
            {:title label
             :aria-label label
             :disabled (not enabled?)
-            :on-click #(reset! !mobile-subpanel value)
+            :on-click #(do
+                         (state/swap-ui! assoc :mobile-subpanel value)
+                         (storage/save-mobile-subpanel! value))
             :class "pa2"
             :style {:opacity (if enabled? 1 0.35)
                     :border (if selected? "2px solid blue" "1px solid gray")

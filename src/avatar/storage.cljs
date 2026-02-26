@@ -68,6 +68,24 @@
 (defn save-other-subcategory! [subcat]
   (.setItem js/localStorage db/other-subcategory-key (name subcat)))
 
+(defn load-mobile-subpanel [default]
+  (let [raw (.getItem js/localStorage db/mobile-subpanel-key)
+        raw* (some-> raw
+                     (str/replace #"^\"|\"$" "")
+                     (str/replace #"^:" "")
+                     str/lower-case)]
+    (case raw*
+      "shape" :shape
+      "swatch" :swatches
+      "swatches" :swatches
+      "color" :swatches
+      "nudge" :nudge
+      "adjust" :nudge
+      default)))
+
+(defn save-mobile-subpanel! [subpanel]
+  (.setItem js/localStorage db/mobile-subpanel-key (name subpanel)))
+
 (defn load-hidden-preset-ids []
   (let [v (load-json db/hidden-presets-key [])]
     (if (sequential? v) (vec (filter string? v)) [])))
@@ -168,6 +186,7 @@
                   :show-presets? (load-bool db/show-presets-key false)
                   :hidden-preset-ids (load-hidden-preset-ids)
                   :user-presets (load-user-presets)
+                  :mobile-subpanel (load-mobile-subpanel :shape)
                   :active-feature (load-active-feature :head)
                   :other-subcategory (load-other-subcategory :glasses))
 
@@ -184,6 +203,8 @@
                      new-feature (get-in new-app [:ui :active-feature])
                      old-subcat (get-in old-app [:ui :other-subcategory])
                      new-subcat (get-in new-app [:ui :other-subcategory])
+                     old-mobile-subpanel (get-in old-app [:ui :mobile-subpanel])
+                     new-mobile-subpanel (get-in new-app [:ui :mobile-subpanel])
                      old-hidden-preset-ids (get-in old-app [:ui :hidden-preset-ids])
                      new-hidden-preset-ids (get-in new-app [:ui :hidden-preset-ids])
                      old-user-presets (get-in old-app [:ui :user-presets])
@@ -198,6 +219,8 @@
                    (save-active-feature! new-feature))
                  (when (not= old-subcat new-subcat)
                    (save-other-subcategory! new-subcat))
+                 (when (not= old-mobile-subpanel new-mobile-subpanel)
+                   (save-mobile-subpanel! new-mobile-subpanel))
                  (when (not= old-hidden-preset-ids new-hidden-preset-ids)
                    (save-hidden-preset-ids! new-hidden-preset-ids))
                  (when (not= old-user-presets new-user-presets)

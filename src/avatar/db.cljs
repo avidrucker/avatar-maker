@@ -16,6 +16,7 @@
 (def user-presets-key "mii-svg-avatar/user-presets")
 (def active-feature-key "mii-svg-avatar/active-feature")
 (def other-subcategory-key "mii-svg-avatar/other-subcategory")
+(def mobile-subpanel-key "mii-svg-avatar/mobile-subpanel")
 
 ;; Footer tool state
 (defonce !show-svg? (r/cursor state/!app [:ui :show-svg?]))
