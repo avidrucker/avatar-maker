@@ -1072,14 +1072,34 @@
        :style {:cursor "pointer"}}
       "x"]]))
 
+(defn all-presets []
+  (vec (concat cfg/presets (get-in (state/ui) [:user-presets]))))
+
+(defn preset-signature
+  "Canonical form for duplicate detection; ignore only unique preset id."
+  [preset]
+  (-> (render/normalize-spec (or preset cfg/default-spec))
+      (dissoc :preset-id)))
+
+(defn duplicate-current-preset?
+  []
+  (let [current-sig (preset-signature (state/spec))]
+    (boolean
+     (some #(= current-sig (preset-signature %))
+           (all-presets)))))
+
 (defn save-current-as-preset! []
-  (let [spec (or (state/spec) cfg/default-spec)
-        new-preset (assoc (render/normalize-spec spec)
-                          :preset-id (str (random-uuid))
-                          :name-id (or (:name-id spec) "Preset"))]
-    (state/swap-ui! update :user-presets
-                    (fn [presets]
-                      (conj (vec (or presets [])) new-preset)))))
+  (when-not (duplicate-current-preset?)
+    (let [spec (or (state/spec) cfg/default-spec)
+          saved-preset (assoc (render/normalize-spec spec)
+                              :preset-id (str (random-uuid))
+                              :name-id (or (:name-id spec) "Preset"))
+          next-current-id (str (random-uuid))]
+      (state/swap-ui! update :user-presets
+                      (fn [presets]
+                        (conj (vec (or presets [])) saved-preset)))
+      ;; Keep current avatar distinct from any stored preset ids.
+      (state/swap-spec! assoc :preset-id next-current-id))))
 
 (defn restore-presets! []
   (state/swap-ui! assoc :hidden-preset-ids []))
@@ -1087,7 +1107,7 @@
 (defn presets-panel []
   (let [current-spec (state/spec)
         hidden-ids (set (get-in (state/ui) [:hidden-preset-ids]))
-        all-presets (vec (concat cfg/presets (get-in (state/ui) [:user-presets])))
+        all-presets (all-presets)
         visible-presets (->> all-presets
                              (remove #(contains? hidden-ids (:preset-id %)))
                              (sort-by (fn [p] (str/lower-case (or (:name-id p) ""))))
@@ -1162,6 +1182,7 @@
         show-edn? (get-in (state/ui) [:show-edn?])
         show-about? (get-in (state/ui) [:show-about?])
         show-presets? (get-in (state/ui) [:show-presets?])
+        save-disabled? (duplicate-current-preset?)
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
     [:footer
@@ -1183,9 +1204,14 @@
                 :on-click #(state/swap-ui! update :show-presets? not)}
        (if show-presets? "Hide Presets" "Presets")]
       [:button 
-       {:class "ma1" 
+       {:class "ma1"
+        :disabled save-disabled?
         :on-click #(save-current-as-preset!)
-        :title "Save the current avatar as a preset"
+        :title (if save-disabled?
+                 "Change the current avatar to save a new unique one"
+                 "Save the current avatar as a preset")
+        :style {:opacity (if save-disabled? 0.5 1.0)
+                :cursor (if save-disabled? "not-allowed" "pointer")}
         }
        "Save"]
       [:button {:class "ma1"
