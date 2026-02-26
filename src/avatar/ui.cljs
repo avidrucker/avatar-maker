@@ -1073,10 +1073,23 @@
        :style {:cursor "pointer"}}
       "x"]]))
 
+(defn save-current-as-preset! []
+  (let [spec (or (state/spec) cfg/default-spec)
+        new-preset (assoc (render/normalize-spec spec)
+                          :preset-id (str (random-uuid))
+                          :name-id (or (:name-id spec) "Preset"))]
+    (state/swap-ui! update :user-presets
+                    (fn [presets]
+                      (conj (vec (or presets [])) new-preset)))))
+
+(defn restore-presets! []
+  (state/swap-ui! assoc :hidden-preset-ids []))
+
 (defn presets-panel []
   (let [current-spec (state/spec)
         hidden-ids (set (get-in (state/ui) [:hidden-preset-ids]))
-        visible-presets (->> cfg/presets
+        all-presets (vec (concat cfg/presets (get-in (state/ui) [:user-presets])))
+        visible-presets (->> all-presets
                              (remove #(contains? hidden-ids (:preset-id %)))
                              (sort-by (fn [p] (str/lower-case (or (:name-id p) ""))))
                              vec)
@@ -1156,6 +1169,7 @@
      {:class "footer bg-white ba b--black-20 br3 pa1 mt2 fixed-ns bottom-0 left-0 right-0"}
      [:div {:class "flex flex-wrap items-center"}
       [:button {:class "ma1"
+                :title "Reset the current avatar back to the default"
                 :on-click #(state/reset-spec! cfg/default-spec)} "Reset"]
       [:button {:class "ma1"
                 :on-click #(state/swap-ui! update :show-svg? not)}
@@ -1168,7 +1182,18 @@
        (if show-about? "Hide About" "About")]
       [:button {:class "ma1"
                 :on-click #(state/swap-ui! update :show-presets? not)}
-       (if show-presets? "Hide Presets" "Presets")]]
+       (if show-presets? "Hide Presets" "Presets")]
+      [:button 
+       {:class "ma1" 
+        :on-click #(save-current-as-preset!)
+        :title "Save the current avatar as a preset"
+        }
+       "Save"]
+      [:button {:class "ma1"
+                :on-click #(restore-presets!)
+                :title "Restore all default presets"
+                }
+       "Restore"]]
 
      (when show-presets?
        [presets-panel])

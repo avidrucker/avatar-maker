@@ -75,6 +75,18 @@
 (defn save-hidden-preset-ids! [ids]
   (save-json! db/hidden-presets-key (vec (or ids []))))
 
+(defn load-user-presets []
+  (let [v (load-json db/user-presets-key [])]
+    (if (sequential? v)
+      (->> v
+           (filter map?)
+           (map render/normalize-spec)
+           vec)
+      [])))
+
+(defn save-user-presets! [presets]
+  (save-json! db/user-presets-key (vec (or presets []))))
+
 (defn attrs->str [m]
   (->> m
        (map (fn [[k v]]
@@ -155,6 +167,7 @@
                   :show-svg? (load-bool db/show-svg-key false)
                   :show-presets? (load-bool db/show-presets-key false)
                   :hidden-preset-ids (load-hidden-preset-ids)
+                  :user-presets (load-user-presets)
                   :active-feature (load-active-feature :head)
                   :other-subcategory (load-other-subcategory :glasses))
 
@@ -172,7 +185,9 @@
                      old-subcat (get-in old-app [:ui :other-subcategory])
                      new-subcat (get-in new-app [:ui :other-subcategory])
                      old-hidden-preset-ids (get-in old-app [:ui :hidden-preset-ids])
-                     new-hidden-preset-ids (get-in new-app [:ui :hidden-preset-ids])]
+                     new-hidden-preset-ids (get-in new-app [:ui :hidden-preset-ids])
+                     old-user-presets (get-in old-app [:ui :user-presets])
+                     new-user-presets (get-in new-app [:ui :user-presets])]
                  (when (not= old-spec new-spec)
                    (save-spec! new-spec))
                  (when (not= old-show-svg? new-show-svg?)
@@ -184,4 +199,6 @@
                  (when (not= old-subcat new-subcat)
                    (save-other-subcategory! new-subcat))
                  (when (not= old-hidden-preset-ids new-hidden-preset-ids)
-                   (save-hidden-preset-ids! new-hidden-preset-ids))))))
+                   (save-hidden-preset-ids! new-hidden-preset-ids))
+                 (when (not= old-user-presets new-user-presets)
+                   (save-user-presets! new-user-presets))))))

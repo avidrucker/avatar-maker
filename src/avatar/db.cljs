@@ -13,6 +13,7 @@
 (def show-svg-key "mii-svg-avatar/show-svg")
 (def show-presets-key "mii-svg-avatar/show-presets")
 (def hidden-presets-key "mii-svg-avatar/hidden-presets")
+(def user-presets-key "mii-svg-avatar/user-presets")
 (def active-feature-key "mii-svg-avatar/active-feature")
 (def other-subcategory-key "mii-svg-avatar/other-subcategory")
 
