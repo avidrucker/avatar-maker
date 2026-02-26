@@ -48,6 +48,15 @@
 (defn save-active-feature! [feature]
   (.setItem js/localStorage db/active-feature-key (name feature)))
 
+(defn load-other-subcategory [default]
+  (let [allowed #{:glasses :birthmark :mustache :beard}
+        raw (.getItem js/localStorage db/other-subcategory-key)
+        kw (when (seq raw) (keyword raw))]
+    (if (contains? allowed kw) kw default)))
+
+(defn save-other-subcategory! [subcat]
+  (.setItem js/localStorage db/other-subcategory-key (name subcat)))
+
 (defn attrs->str [m]
   (->> m
        (map (fn [[k v]]
@@ -127,7 +136,8 @@
   (state/swap-ui! assoc
                   :show-svg? (load-bool db/show-svg-key false)
                   :show-presets? (load-bool db/show-presets-key false)
-                  :active-feature (load-active-feature :head))
+                  :active-feature (load-active-feature :head)
+                  :other-subcategory (load-other-subcategory :glasses))
 
   (remove-watch state/!app ::persist-app)
   (add-watch state/!app ::persist-app
@@ -139,7 +149,9 @@
                      old-show-presets? (get-in old-app [:ui :show-presets?])
                      new-show-presets? (get-in new-app [:ui :show-presets?])
                      old-feature (get-in old-app [:ui :active-feature])
-                     new-feature (get-in new-app [:ui :active-feature])]
+                     new-feature (get-in new-app [:ui :active-feature])
+                     old-subcat (get-in old-app [:ui :other-subcategory])
+                     new-subcat (get-in new-app [:ui :other-subcategory])]
                  (when (not= old-spec new-spec)
                    (save-spec! new-spec))
                  (when (not= old-show-svg? new-show-svg?)
@@ -147,4 +159,6 @@
                  (when (not= old-show-presets? new-show-presets?)
                    (save-bool! db/show-presets-key new-show-presets?))
                  (when (not= old-feature new-feature)
-                   (save-active-feature! new-feature))))))
+                   (save-active-feature! new-feature))
+                 (when (not= old-subcat new-subcat)
+                   (save-other-subcategory! new-subcat))))))
