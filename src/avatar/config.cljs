@@ -160,7 +160,7 @@
 
 (def default-spec
   {:version 16
-   :name-id "Mary"
+   :name-id "Missy"
    :parts 
    {:head {:shape :egg :skin :light-cream} 
     :eyes {:spacing 0.54 :size 1 :y-offset 12 :rotation 0 :shape :002 :iris :brown} 
@@ -179,7 +179,7 @@
 (def presets
   [default-spec
    {:version 16
-    :name-id "Bob"
+    :name-id "Matsura"
     :parts
     {:head {:shape :blocky :skin :light-cream}
      :eyes {:spacing 0.54 :size 1 :y-offset 18 :rotation 0 :shape :006 :iris :brown}
@@ -203,5 +203,8 @@
      :other {:category :glasses
              :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
    
-   {:version 16 :name-id "Nameless" :parts {:head {:shape :egg :skin :light-cream} :eyes {:spacing 0.54 :size 1 :y-offset 12 :rotation 0 :shape :001 :iris :gray} :hair {:shape :bald :color :espresso} :brows {:shape :004 :color :chestnut :size 1 :x-offset -8 :y-offset 12 :rotation 16} :nose {:shape :four :stroke "black" :size 0.88 :y-offset -1} :mouth {:shape :three :color :natural :size 0.82 :y-offset 10} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+   {:version 16 :name-id "Feather" :parts {:head {:shape :egg :skin :light-cream} :eyes {:spacing 0.54 :size 1 :y-offset 12 :rotation 0 :shape :001 :iris :gray} :hair {:shape :bald :color :espresso} :brows {:shape :004 :color :chestnut :size 1 :x-offset -8 :y-offset 12 :rotation 16} :nose {:shape :four :stroke "black" :size 0.88 :y-offset -1} :mouth {:shape :three :color :natural :size 0.82 :y-offset 10} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+
+   {:version 16 :name-id "Kenny" :parts {:head {:shape :egg :skin :golden} :eyes {:spacing 0.5 :size 0.9 :y-offset 12 :rotation 0 :shape :013 :iris :brown} :hair {:shape :bald :color :espresso} :brows {:shape :007 :color :dark-brown :size 1.08 :x-offset -4 :y-offset 0 :rotation 0} :nose {:shape :thirteen :stroke "black" :size 0.96 :y-offset 3} :mouth {:shape :eight :color :brown :size 0.94 :y-offset 10} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+
    ])
