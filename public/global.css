@@ -19,6 +19,10 @@ body {
     display: flex;
 }
 
+.notice-text {
+    text-align: center;
+}
+
 @container mobile-subpanel (max-width: 23.499em) {
     .mobile-tabbed-subpanel {
         display: block;
@@ -36,6 +40,13 @@ body {
 
     .horizontal-tab-container {
         display: flex;
+    }
+
+
+    @media screen and (min-width: 30em) {
+        .notice-text {
+            text-align: left;
+        }
     }
 }
 
