@@ -214,4 +214,6 @@
    
    {:version 16 :preset-id "108149d4-1f13-49c4-9bf6-ecfb393f14f4" :name-id "Sarina" :parts {:head {:shape :pointy :skin :dark-espresso} :eyes {:spacing 0.58 :size 1 :y-offset 16 :rotation 0 :shape :003 :iris :black} :hair {:shape :one :color :jet-black} :brows {:shape :004 :color :jet-black :size 1.06 :x-offset -4 :y-offset 16 :rotation 16} :nose {:shape :eight :stroke "black" :size 0.92 :y-offset 1} :mouth {:shape :seventeen :color :black :size 0.94 :y-offset 12} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
    
+   {:version 16 :preset-id "29137283-fa2e-4bed-9c8a-3b5d36050e7f" :name-id "Karen" :parts {:head {:shape :egg :skin :peach} :eyes {:spacing 0.58 :size 1 :y-offset 12 :rotation 6 :shape :002 :iris :teal} :hair {:shape :four :color :mahogany} :brows {:shape :002 :color :mahogany :size 1.04 :x-offset -8 :y-offset 12 :rotation 16} :nose {:shape :six :stroke "black" :size 1.04 :y-offset 9} :mouth {:shape :sixteen :color :deep-rose :size 0.94 :y-offset 14} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+
    ])
