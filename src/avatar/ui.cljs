@@ -3,6 +3,7 @@
             [avatar.render :as render]
             [avatar.storage :as storage]
             [avatar.config :as cfg]
+            [avatar.ui.components :as comp]
             [avatar.icons :as icons]
             [clojure.string :as str]
             [reagent.core :as r]))
@@ -57,34 +58,10 @@
                                   0)))))
 
 (defn pager [page-key pages]
-  (when (> pages 1)
-    (let [p (page-get page-key)
-          prev-disabled? (<= p 0)
-          next-disabled? (>= p (dec pages))]
-      [:div {:class "pb2"
-             :style {:display "flex"
-                     :align-items "center"
-                     :gap "8px"
-                     }}
-
-       [:button {:disabled prev-disabled?
-                 :title "Previous"
-                 :aria-label "Previous"
-                 :style {:width 28 :height 24
-                         :opacity (if prev-disabled? 0.35 1)}
-                 :on-click #(page-prev! page-key)}
-        "◀"]
-
-       [:div {:style {:font-size 12}}
-        (str (inc p) "/" pages)]
-
-       [:button {:disabled next-disabled?
-                 :title "Next"
-                 :aria-label "Next"
-                 :style {:width 28 :height 24
-                         :opacity (if next-disabled? 0.35 1)}
-                 :on-click #(page-next! page-key pages)}
-        "▶"]])))
+  [comp/pager {:page (page-get page-key)
+               :pages pages
+               :on-prev #(page-prev! page-key)
+               :on-next #(page-next! page-key pages)}])
 
 ;; -------------------------
 ;; Head controls (existing)
@@ -749,6 +726,171 @@
                  :icon (icons/btn-scale-down color)
                  :on-click #(nudge! [:parts :other :glasses :scale] (- ds))}]]]))
 
+(def feature-ui
+  {:head {:shape {:page-key :shape/head
+                  :per-page 9
+                  :entries-fn head-shape-entries
+                  :selected-path [:parts :head :shape]
+                  :preview-fn (fn [spec shape]
+                                (head-preview-svg shape (get-in spec [:parts :head :skin])))}
+          :swatch {:page-key :swatch/skin
+                   :per-page 12
+                   :columns 3
+                   :swatches cfg/skin-swatches
+                   :selected-path [:parts :head :skin]}}
+   :hair {:shape {:page-key :shape/hair
+                  :per-page 9
+                  :entries-fn #(vec (render/sorted-shape-entries :hair))
+                  :selected-path [:parts :hair :shape]
+                  :preview-fn hair-preview-svg}
+          :swatch {:page-key :swatch/hair
+                   :per-page 8
+                   :columns 4
+                   :swatches cfg/hair-swatches
+                   :selected-path [:parts :hair :color]}}
+   :eyes {:shape {:page-key :shape/eyes
+                  :per-page 9
+                  :entries-fn #(vec (render/sorted-shape-entries :eyes))
+                  :selected-path [:parts :eyes :shape]
+                  :preview-fn (fn [spec shape]
+                                (eye-preview-svg shape (get-in spec [:parts :eyes :iris])))}
+          :swatch {:page-key :swatch/iris
+                   :per-page 6
+                   :columns 3
+                   :swatches cfg/iris-swatches
+                   :selected-path [:parts :eyes :iris]}}
+   :brows {:shape {:page-key :shape/brows
+                   :per-page 9
+                   :entries-fn #(vec (render/sorted-shape-entries :brows))
+                   :selected-path [:parts :brows :shape]
+                   :preview-fn (fn [spec shape]
+                                 (brow-preview-svg shape (get-in spec [:parts :brows :color])))}
+           :swatch {:page-key :swatch/brows
+                    :per-page 8
+                    :columns 4
+                    :swatches cfg/hair-swatches
+                    :selected-path [:parts :brows :color]}}
+   :nose {:shape {:page-key :shape/nose
+                  :per-page 9
+                  :entries-fn #(vec (render/sorted-shape-entries :nose))
+                  :selected-path [:parts :nose :shape]
+                  :preview-fn (fn [_ shape] (nose-preview-svg shape))}}
+   :mouth {:shape {:page-key :shape/mouth
+                   :per-page 9
+                   :entries-fn #(vec (render/sorted-shape-entries :mouth))
+                   :selected-path [:parts :mouth :shape]
+                   :preview-fn (fn [spec shape]
+                                 (mouth-preview-svg shape (get-in spec [:parts :mouth :color])))}
+           :swatch {:page-key :swatch/lips
+                    :per-page 6
+                    :columns 3
+                    :swatches cfg/lip-swatches
+                    :selected-path [:parts :mouth :color]}}
+   :glasses {:shape {:page-key :shape/glasses
+                     :per-page 9
+                     :entries-fn #(vec (render/sorted-shape-entries :glasses))
+                     :selected-path [:parts :other :glasses :shape]
+                     :preview-fn glasses-preview-svg}
+             :swatch {:per-page 6
+                      :columns 3
+                      :selected-path [:parts :other :glasses :color]
+                      :swatches-fn (fn [spec]
+                                     (let [shape (get-in spec [:parts :other :glasses :shape])
+                                           kind (glasses-kind shape)]
+                                       {:page-key (if (= kind :shades) :swatch/shades :swatch/frame)
+                                        :swatches (if (= kind :shades) cfg/shades-swatches cfg/frame-swatches)}))}}})
+
+(defn shape-panel [spec feature]
+  (let [{:keys [page-key per-page entries-fn selected-path preview-fn]} (get-in feature-ui [feature :shape])
+        entries (entries-fn)
+        paged (paginate entries (page-get page-key) per-page)
+        selected (get-in spec selected-path)]
+    [comp/shape-picker
+     {:entries entries
+      :paged paged
+      :page-key page-key
+      :page-get page-get
+      :on-page-prev page-prev!
+      :on-page-next page-next!
+      :selected selected
+      :on-select #(state/swap-spec! assoc-in selected-path %)
+      :render-preview #(preview-fn spec %)
+      :item-width 68
+      :columns 3
+      :gap feature-button-gap}]))
+
+(defn swatch-panel [spec feature]
+  (let [{:keys [page-key per-page columns swatches selected-path swatches-fn]} (get-in feature-ui [feature :swatch])
+        {:keys [page-key swatches]} (if swatches-fn (swatches-fn spec) {:page-key page-key :swatches swatches})
+        paged (paginate swatches (page-get page-key) per-page)
+        selected (get-in spec selected-path)]
+    [comp/swatch-picker
+     {:paged paged
+      :page-key page-key
+      :page-get page-get
+      :on-page-prev page-prev!
+      :on-page-next page-next!
+      :selected selected
+      :on-select #(state/swap-spec! assoc-in selected-path %)
+      :columns columns
+      :gap swatch-button-gap}]))
+
+(defn nudge-rows [feature]
+  (let [color "black"]
+    (case feature
+      :brows
+      (let [dy (nudge-delta :brows/y-offset)
+            ds (nudge-delta :brows/size)
+            dr (nudge-delta :brows/rotation)
+            dx (nudge-delta :brows/x-offset)]
+        [[{:title "Brows up" :icon (icons/btn-move-up color) :on-click #(nudge! [:parts :brows :y-offset] (- dy))}
+          {:title "Brows down" :icon (icons/btn-move-down color) :on-click #(nudge! [:parts :brows :y-offset] dy)}]
+         [{:title "Brows bigger" :icon (icons/btn-scale-up color) :on-click #(nudge! [:parts :brows :size] ds)}
+          {:title "Brows smaller" :icon (icons/btn-scale-down color) :on-click #(nudge! [:parts :brows :size] (- ds))}]
+         [{:title "Rotate clockwise" :icon (icons/btn-rotate-clockwise color) :on-click #(nudge! [:parts :brows :rotation] dr)}
+          {:title "Rotate counter-clockwise" :icon (icons/btn-rotate-counter color) :on-click #(nudge! [:parts :brows :rotation] (- dr))}]
+         [{:title "Move brows together" :icon (icons/btn-move-together color) :on-click #(nudge! [:parts :brows :x-offset] (- dx))}
+          {:title "Move brows apart" :icon (icons/btn-move-apart color) :on-click #(nudge! [:parts :brows :x-offset] dx)}]])
+      :eyes
+      (let [dy (nudge-delta :eyes/y-offset)
+            ds (nudge-delta :eyes/size)
+            dr (nudge-delta :eyes/rotation)
+            dx (nudge-delta :eyes/spacing)]
+        [[{:title "Eyes up" :icon (icons/btn-move-up color) :on-click #(nudge! [:parts :eyes :y-offset] (- dy))}
+          {:title "Eyes down" :icon (icons/btn-move-down color) :on-click #(nudge! [:parts :eyes :y-offset] dy)}]
+         [{:title "Eyes bigger" :icon (icons/btn-scale-up color) :on-click #(nudge! [:parts :eyes :size] ds)}
+          {:title "Eyes smaller" :icon (icons/btn-scale-down color) :on-click #(nudge! [:parts :eyes :size] (- ds))}]
+         [{:title "Rotate clockwise" :icon (icons/btn-rotate-clockwise color) :on-click #(nudge! [:parts :eyes :rotation] dr)}
+          {:title "Rotate counter-clockwise" :icon (icons/btn-rotate-counter color) :on-click #(nudge! [:parts :eyes :rotation] (- dr))}]
+         [{:title "Move eyes together" :icon (icons/btn-move-together color) :on-click #(nudge! [:parts :eyes :spacing] (- dx))}
+          {:title "Move eyes apart" :icon (icons/btn-move-apart color) :on-click #(nudge! [:parts :eyes :spacing] dx)}]])
+      :nose
+      (let [dy (nudge-delta :nose/y-offset)
+            ds (nudge-delta :nose/size)]
+        [[{:title "Nose up" :icon (icons/btn-move-up color) :on-click #(nudge! [:parts :nose :y-offset] (- dy))}
+          {:title "Nose down" :icon (icons/btn-move-down color) :on-click #(nudge! [:parts :nose :y-offset] dy)}]
+         [{:title "Nose bigger" :icon (icons/btn-scale-up color) :on-click #(nudge! [:parts :nose :size] ds)}
+          {:title "Nose smaller" :icon (icons/btn-scale-down color) :on-click #(nudge! [:parts :nose :size] (- ds))}]])
+      :mouth
+      (let [dy (nudge-delta :mouth/y-offset)
+            ds (nudge-delta :mouth/size)]
+        [[{:title "Mouth up" :icon (icons/btn-move-up color) :on-click #(nudge! [:parts :mouth :y-offset] (- dy))}
+          {:title "Mouth down" :icon (icons/btn-move-down color) :on-click #(nudge! [:parts :mouth :y-offset] dy)}]
+         [{:title "Mouth bigger" :icon (icons/btn-scale-up color) :on-click #(nudge! [:parts :mouth :size] ds)}
+          {:title "Mouth smaller" :icon (icons/btn-scale-down color) :on-click #(nudge! [:parts :mouth :size] (- ds))}]])
+      :glasses
+      (let [dy (nudge-delta :glasses/y-offset)
+            ds (nudge-delta :glasses/scale)]
+        [[{:title "Glasses up" :icon (icons/btn-move-up color) :on-click #(nudge! [:parts :other :glasses :y-offset] (- dy))}
+          {:title "Glasses down" :icon (icons/btn-move-down color) :on-click #(nudge! [:parts :other :glasses :y-offset] dy)}]
+         [{:title "Glasses bigger" :icon (icons/btn-scale-up color) :on-click #(nudge! [:parts :other :glasses :scale] ds)}
+          {:title "Glasses smaller" :icon (icons/btn-scale-down color) :on-click #(nudge! [:parts :other :glasses :scale] (- ds))}]])
+      nil)))
+
+(defn nudge-panel [feature]
+  (when-let [rows (nudge-rows feature)]
+    [comp/nudge-pad {:rows rows}]))
+
 (def other-subcategory-tabs
   [{:value :glasses :label "Glasses" :icon (icons/icon-glasses "black")}
    {:value :birthmark :label "Birthmark" :icon (icons/icon-birthmark "black")}
@@ -776,14 +918,14 @@
 (defn other-feature-sections [spec]
   (case (get-in (state/ui) [:other-subcategory])
     :glasses
-    {:shape [glasses-shape-panel spec]
-     :swatches [glasses-swatch-panel spec]
-     :nudge [glasses-nudge-controls]}
+    {:shape [shape-panel spec :glasses]
+     :swatches [swatch-panel spec :glasses]
+     :nudge [nudge-panel :glasses]}
 
-    :birthmark {:shape [:div {:style {:font-size 12 :opacity 0.7}} "Birthmark coming soon."]}
-    :mustache {:shape [:div {:style {:font-size 12 :opacity 0.7}} "Mustaches coming soon."]}
-    :beard {:shape [:div {:style {:font-size 12 :opacity 0.7}} "Beards coming soon."]}
-    {:shape [:div {:style {:font-size 12 :opacity 0.7}} "Coming soon."]}))
+    :birthmark {:notice [:div {:style {:font-size 12 :opacity 0.7}} "Birthmark coming soon."]}
+    :mustache {:notice [:div {:style {:font-size 12 :opacity 0.7}} "Mustaches coming soon."]}
+    :beard {:notice [:div {:style {:font-size 12 :opacity 0.7}} "Beards coming soon."]}
+    {:notice [:div {:style {:font-size 12 :opacity 0.7}} "Coming soon."]}))
 
 ;; -------------------------
 ;; Feature category tabs
@@ -872,21 +1014,21 @@
 
 (defn active-feature-sections [spec]
   (case (get-in (state/ui) [:active-feature])
-    :head  {:shape [head-shape-panel spec]
-            :swatches [head-swatch-panel spec]}
-    :hair  {:shape [hair-shape-panel spec]
-            :swatches [hair-swatch-panel spec]}
-    :brows {:shape [brows-shape-panel spec]
-            :swatches [brows-swatch-panel spec]
-            :nudge [brows-nudge-controls]}
-    :eyes  {:shape [eye-shape-panel spec]
-            :swatches [eye-swatch-panel spec]
-            :nudge [eyes-nudge-controls]}
-    :nose  {:shape [nose-shape-panel spec]
-            :nudge [nose-nudge-controls]}
-    :mouth {:shape [mouth-shape-panel spec]
-            :swatches [mouth-swatch-panel spec]
-            :nudge [mouth-nudge-controls]}
+    :head  {:shape [shape-panel spec :head]
+            :swatches [swatch-panel spec :head]}
+    :hair  {:shape [shape-panel spec :hair]
+            :swatches [swatch-panel spec :hair]}
+    :brows {:shape [shape-panel spec :brows]
+            :swatches [swatch-panel spec :brows]
+            :nudge [nudge-panel :brows]}
+    :eyes  {:shape [shape-panel spec :eyes]
+            :swatches [swatch-panel spec :eyes]
+            :nudge [nudge-panel :eyes]}
+    :nose  {:shape [shape-panel spec :nose]
+            :nudge [nudge-panel :nose]}
+    :mouth {:shape [shape-panel spec :mouth]
+            :swatches [swatch-panel spec :mouth]
+            :nudge [nudge-panel :mouth]}
     :other (merge
             {:prefix [other-subcategory-tabs-row]}
             (other-feature-sections spec))
@@ -1067,7 +1209,7 @@
 (defn main-panel []
   (let [spec (state/spec)
         sections (active-feature-sections spec)
-        {:keys [prefix shape swatches nudge]} sections]
+        {:keys [prefix notice shape swatches nudge]} sections]
     [:div {:class "pa1 relative"}
 
      [:div
@@ -1095,15 +1237,22 @@
        [:div {:class "mobile-tabbed-subpanel"}
         (when prefix
           [:div prefix])
-        [mobile-subpanel-tabs-row sections]
-        [:div {:class "flex items-start justify-center"}
-         (mobile-active-subpanel-content sections)]]
+        (when notice
+          [:div {:class "notice-text mb2"} notice])
+        (when (or shape swatches nudge)
+          [mobile-subpanel-tabs-row sections])
+        (when (or shape swatches nudge)
+          [:div {:class "flex flex-column items-center justify-center"}
+           (mobile-active-subpanel-content sections)])]
 
        [:div
         {:class "horizontal-tab-container controls-layout measure flex flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
         (when prefix
           [:div {:class "w-100 w-auto-ns"} prefix])
-        [:div {:class "shape-pane mr2 pb2"} shape]
+        (when notice
+          [:div {:class "notice-text w-100 pb2"} notice])
+        (when shape
+          [:div {:class "shape-pane mr2 pb2"} shape])
         [:div {:class "meta-pane ml2-l"}
          (when swatches
            [:div {:class "mb2"} swatches])
