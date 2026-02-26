@@ -209,4 +209,6 @@
 
    {:version 16 :name-id "Alexander" :parts {:head {:shape :egg :skin :golden} :eyes {:spacing 0.5 :size 0.9 :y-offset 12 :rotation 0 :shape :013 :iris :brown} :hair {:shape :two :color :medium-brown} :brows {:shape :007 :color :dark-brown :size 1.08 :x-offset -4 :y-offset 0 :rotation 0} :nose {:shape :thirteen :stroke "black" :size 0.8 :y-offset 3} :mouth {:shape :five :color :brown :size 0.94 :y-offset 10} :ears {:shape :none} :other {:category :glasses :glasses {:shape :glasses_001 :color :blue :scale 1.06 :y-offset -6}}}}
    
+   {:version 16 :name-id "Sarina" :parts {:head {:shape :pointy :skin :dark-espresso} :eyes {:spacing 0.58 :size 1 :y-offset 16 :rotation 0 :shape :003 :iris :black} :hair {:shape :one :color :jet-black} :brows {:shape :004 :color :jet-black :size 1.06 :x-offset -4 :y-offset 16 :rotation 16} :nose {:shape :eight :stroke "black" :size 0.92 :y-offset 1} :mouth {:shape :seventeen :color :black :size 0.94 :y-offset 12} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+   
    ])
