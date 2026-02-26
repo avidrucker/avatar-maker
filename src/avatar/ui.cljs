@@ -835,57 +835,60 @@
       :columns columns
       :gap swatch-button-gap}]))
 
+(def nudge-specs
+  {:eyes
+   [{:row 0 :title "Eyes up" :icon icons/btn-move-up :path [:parts :eyes :y-offset] :dir -1 :cfg-key :eyes/y-offset}
+    {:row 0 :title "Eyes down" :icon icons/btn-move-down :path [:parts :eyes :y-offset] :dir 1 :cfg-key :eyes/y-offset}
+    {:row 1 :title "Eyes bigger" :icon icons/btn-scale-up :path [:parts :eyes :size] :dir 1 :cfg-key :eyes/size}
+    {:row 1 :title "Eyes smaller" :icon icons/btn-scale-down :path [:parts :eyes :size] :dir -1 :cfg-key :eyes/size}
+    {:row 2 :title "Rotate clockwise" :icon icons/btn-rotate-clockwise :path [:parts :eyes :rotation] :dir 1 :cfg-key :eyes/rotation}
+    {:row 2 :title "Rotate counter-clockwise" :icon icons/btn-rotate-counter :path [:parts :eyes :rotation] :dir -1 :cfg-key :eyes/rotation}
+    {:row 3 :title "Move eyes together" :icon icons/btn-move-together :path [:parts :eyes :spacing] :dir -1 :cfg-key :eyes/spacing}
+    {:row 3 :title "Move eyes apart" :icon icons/btn-move-apart :path [:parts :eyes :spacing] :dir 1 :cfg-key :eyes/spacing}]
+
+   :brows
+   [{:row 0 :title "Brows up" :icon icons/btn-move-up :path [:parts :brows :y-offset] :dir -1 :cfg-key :brows/y-offset}
+    {:row 0 :title "Brows down" :icon icons/btn-move-down :path [:parts :brows :y-offset] :dir 1 :cfg-key :brows/y-offset}
+    {:row 1 :title "Brows bigger" :icon icons/btn-scale-up :path [:parts :brows :size] :dir 1 :cfg-key :brows/size}
+    {:row 1 :title "Brows smaller" :icon icons/btn-scale-down :path [:parts :brows :size] :dir -1 :cfg-key :brows/size}
+    {:row 2 :title "Rotate clockwise" :icon icons/btn-rotate-clockwise :path [:parts :brows :rotation] :dir 1 :cfg-key :brows/rotation}
+    {:row 2 :title "Rotate counter-clockwise" :icon icons/btn-rotate-counter :path [:parts :brows :rotation] :dir -1 :cfg-key :brows/rotation}
+    {:row 3 :title "Move brows together" :icon icons/btn-move-together :path [:parts :brows :x-offset] :dir -1 :cfg-key :brows/x-offset}
+    {:row 3 :title "Move brows apart" :icon icons/btn-move-apart :path [:parts :brows :x-offset] :dir 1 :cfg-key :brows/x-offset}]
+
+   :nose
+   [{:row 0 :title "Nose up" :icon icons/btn-move-up :path [:parts :nose :y-offset] :dir -1 :cfg-key :nose/y-offset}
+    {:row 0 :title "Nose down" :icon icons/btn-move-down :path [:parts :nose :y-offset] :dir 1 :cfg-key :nose/y-offset}
+    {:row 1 :title "Nose bigger" :icon icons/btn-scale-up :path [:parts :nose :size] :dir 1 :cfg-key :nose/size}
+    {:row 1 :title "Nose smaller" :icon icons/btn-scale-down :path [:parts :nose :size] :dir -1 :cfg-key :nose/size}]
+
+   :mouth
+   [{:row 0 :title "Mouth up" :icon icons/btn-move-up :path [:parts :mouth :y-offset] :dir -1 :cfg-key :mouth/y-offset}
+    {:row 0 :title "Mouth down" :icon icons/btn-move-down :path [:parts :mouth :y-offset] :dir 1 :cfg-key :mouth/y-offset}
+    {:row 1 :title "Mouth bigger" :icon icons/btn-scale-up :path [:parts :mouth :size] :dir 1 :cfg-key :mouth/size}
+    {:row 1 :title "Mouth smaller" :icon icons/btn-scale-down :path [:parts :mouth :size] :dir -1 :cfg-key :mouth/size}]
+
+   :glasses
+   [{:row 0 :title "Glasses up" :icon icons/btn-move-up :path [:parts :other :glasses :y-offset] :dir -1 :cfg-key :glasses/y-offset}
+    {:row 0 :title "Glasses down" :icon icons/btn-move-down :path [:parts :other :glasses :y-offset] :dir 1 :cfg-key :glasses/y-offset}
+    {:row 1 :title "Glasses bigger" :icon icons/btn-scale-up :path [:parts :other :glasses :scale] :dir 1 :cfg-key :glasses/scale}
+    {:row 1 :title "Glasses smaller" :icon icons/btn-scale-down :path [:parts :other :glasses :scale] :dir -1 :cfg-key :glasses/scale}]})
+
 (defn nudge-rows [feature]
-  (let [color "black"]
-    (case feature
-      :brows
-      (let [dy (nudge-delta :brows/y-offset)
-            ds (nudge-delta :brows/size)
-            dr (nudge-delta :brows/rotation)
-            dx (nudge-delta :brows/x-offset)]
-        [[{:title "Brows up" :icon (icons/btn-move-up color) :on-click #(nudge! [:parts :brows :y-offset] (- dy))}
-          {:title "Brows down" :icon (icons/btn-move-down color) :on-click #(nudge! [:parts :brows :y-offset] dy)}]
-         [{:title "Brows bigger" :icon (icons/btn-scale-up color) :on-click #(nudge! [:parts :brows :size] ds)}
-          {:title "Brows smaller" :icon (icons/btn-scale-down color) :on-click #(nudge! [:parts :brows :size] (- ds))}]
-         [{:title "Rotate clockwise" :icon (icons/btn-rotate-clockwise color) :on-click #(nudge! [:parts :brows :rotation] dr)}
-          {:title "Rotate counter-clockwise" :icon (icons/btn-rotate-counter color) :on-click #(nudge! [:parts :brows :rotation] (- dr))}]
-         [{:title "Move brows together" :icon (icons/btn-move-together color) :on-click #(nudge! [:parts :brows :x-offset] (- dx))}
-          {:title "Move brows apart" :icon (icons/btn-move-apart color) :on-click #(nudge! [:parts :brows :x-offset] dx)}]])
-      :eyes
-      (let [dy (nudge-delta :eyes/y-offset)
-            ds (nudge-delta :eyes/size)
-            dr (nudge-delta :eyes/rotation)
-            dx (nudge-delta :eyes/spacing)]
-        [[{:title "Eyes up" :icon (icons/btn-move-up color) :on-click #(nudge! [:parts :eyes :y-offset] (- dy))}
-          {:title "Eyes down" :icon (icons/btn-move-down color) :on-click #(nudge! [:parts :eyes :y-offset] dy)}]
-         [{:title "Eyes bigger" :icon (icons/btn-scale-up color) :on-click #(nudge! [:parts :eyes :size] ds)}
-          {:title "Eyes smaller" :icon (icons/btn-scale-down color) :on-click #(nudge! [:parts :eyes :size] (- ds))}]
-         [{:title "Rotate clockwise" :icon (icons/btn-rotate-clockwise color) :on-click #(nudge! [:parts :eyes :rotation] dr)}
-          {:title "Rotate counter-clockwise" :icon (icons/btn-rotate-counter color) :on-click #(nudge! [:parts :eyes :rotation] (- dr))}]
-         [{:title "Move eyes together" :icon (icons/btn-move-together color) :on-click #(nudge! [:parts :eyes :spacing] (- dx))}
-          {:title "Move eyes apart" :icon (icons/btn-move-apart color) :on-click #(nudge! [:parts :eyes :spacing] dx)}]])
-      :nose
-      (let [dy (nudge-delta :nose/y-offset)
-            ds (nudge-delta :nose/size)]
-        [[{:title "Nose up" :icon (icons/btn-move-up color) :on-click #(nudge! [:parts :nose :y-offset] (- dy))}
-          {:title "Nose down" :icon (icons/btn-move-down color) :on-click #(nudge! [:parts :nose :y-offset] dy)}]
-         [{:title "Nose bigger" :icon (icons/btn-scale-up color) :on-click #(nudge! [:parts :nose :size] ds)}
-          {:title "Nose smaller" :icon (icons/btn-scale-down color) :on-click #(nudge! [:parts :nose :size] (- ds))}]])
-      :mouth
-      (let [dy (nudge-delta :mouth/y-offset)
-            ds (nudge-delta :mouth/size)]
-        [[{:title "Mouth up" :icon (icons/btn-move-up color) :on-click #(nudge! [:parts :mouth :y-offset] (- dy))}
-          {:title "Mouth down" :icon (icons/btn-move-down color) :on-click #(nudge! [:parts :mouth :y-offset] dy)}]
-         [{:title "Mouth bigger" :icon (icons/btn-scale-up color) :on-click #(nudge! [:parts :mouth :size] ds)}
-          {:title "Mouth smaller" :icon (icons/btn-scale-down color) :on-click #(nudge! [:parts :mouth :size] (- ds))}]])
-      :glasses
-      (let [dy (nudge-delta :glasses/y-offset)
-            ds (nudge-delta :glasses/scale)]
-        [[{:title "Glasses up" :icon (icons/btn-move-up color) :on-click #(nudge! [:parts :other :glasses :y-offset] (- dy))}
-          {:title "Glasses down" :icon (icons/btn-move-down color) :on-click #(nudge! [:parts :other :glasses :y-offset] dy)}]
-         [{:title "Glasses bigger" :icon (icons/btn-scale-up color) :on-click #(nudge! [:parts :other :glasses :scale] ds)}
-          {:title "Glasses smaller" :icon (icons/btn-scale-down color) :on-click #(nudge! [:parts :other :glasses :scale] (- ds))}]])
-      nil)))
+  (let [color "black"
+        items (get nudge-specs feature)]
+    (when (seq items)
+      (->> items
+           (sort-by :row)
+           (group-by :row)
+           (map (fn [[_ row-items]]
+                  (vec
+                   (for [{:keys [title icon path dir cfg-key]} row-items
+                         :let [delta (* dir (nudge-delta cfg-key))]]
+                     {:title title
+                      :icon (icon color)
+                      :on-click #(nudge! path delta)}))))
+           vec))))
 
 (defn nudge-panel [feature]
   (when-let [rows (nudge-rows feature)]
