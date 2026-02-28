@@ -68,7 +68,7 @@
 
 (defn resolve-head-renderer [shape]
   (get-in render/head-registry [shape :render]
-          (get-in render/head-registry [:average :render])))
+          (get-in render/head-registry [render/head-default :render])))
 
 (defn head-preview-svg [shape skin-key]
   (let [head-fn (resolve-head-renderer shape)

@@ -163,7 +163,7 @@
    :preset-id "d3895417-5934-43ff-8896-291af00437de"
    :name-id "Missy"
    :parts 
-   {:head {:shape :egg :skin :light-cream} 
+   {:head {:shape :001 :skin :light-cream} 
     :eyes {:spacing 0.54 :size 1 :y-offset 12 :rotation 0 :shape :002 :iris :brown} 
     :hair {:shape :one :color :espresso} 
     :brows {:shape :004 :color :jet-black :size 1 :x-offset -8 :y-offset 12 :rotation 16} 

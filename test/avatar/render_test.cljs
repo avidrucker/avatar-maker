@@ -19,6 +19,14 @@
       (is (= :jet-black (get-in out [:parts :brows :color])))
       (is (= :one (get-in out [:parts :nose :shape]))))))
 
+(deftest normalize-spec-uses-new-head-default-but-keeps-legacy-heads-valid
+  (testing "invalid head shape falls back to new default"
+    (let [out (render/normalize-spec {:parts {:head {:shape "not-real" :skin "tan"}}})]
+      (is (= :001 (get-in out [:parts :head :shape])))))
+  (testing "legacy preset head shapes still normalize as valid"
+    (let [out (render/normalize-spec {:parts {:head {:shape "egg" :skin "tan"}}})]
+      (is (= :egg (get-in out [:parts :head :shape]))))))
+
 (deftest normalize-spec-handles-glasses-legacy-color-keys
   (testing "legacy lens/frame keys normalize into unified :color"
     (let [spec {:parts {:other {:glasses {:shape "shades_001"
