@@ -71,14 +71,13 @@
           (get-in render/head-registry [render/head-default :render])))
 
 (defn head-preview-svg [shape skin-key]
-  (let [head-fn (resolve-head-renderer shape)
-        hex (get cfg/skin-tones skin-key)]
+  (let [head-fn (resolve-head-renderer shape)]
     [:svg {:viewBox "-50 -50 100 100"
            :width 48
            :height 48
            :preserveAspectRatio "xMidYMid meet"
            :style {:display "block"}}
-     [head-fn {:skin hex}]]))
+     [head-fn {:skin skin-key}]]))
 
 (defn head-shape-button [spec shape label]
   (let [selected? (= (get-in spec [:parts :head :shape]) shape)]
@@ -164,7 +163,6 @@
         color-key (get-in spec [:parts :hair :color])
         head-fn (render/resolve-renderer :head head-shape)
         hair-fn (render/resolve-renderer :hair shape)
-        skin-hex (get cfg/skin-tones skin-key)
         hair-hex (get cfg/hair-colors color-key)
         layers (hair-fn {:color hair-hex})]
     [:svg {:viewBox "-50 -50 100 100"
@@ -173,7 +171,7 @@
            :preserveAspectRatio "xMidYMid meet"
            :style {:display "block"}}
      (:back layers)
-     [head-fn {:skin skin-hex}]
+     [head-fn {:skin skin-key}]
      (:front layers)
      (:front2 layers)]))
 

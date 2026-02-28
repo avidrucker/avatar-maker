@@ -30,12 +30,110 @@
 ;; Head renderers
 ;; -------------------------
 
+(def head-gradient-x-nudge
+  "Adjust the shared forehead highlight horizontally for every head shape."
+  25)
+
+(def head-gradient-y-nudge
+  "Adjust the shared forehead highlight vertically for every head shape."
+  15)
+
+(def head-skin-gradients
+  {:light-cream
+   {:type :matrix
+    :a -13.0281 :b 40.5658 :c -23.7024 :d -6.44796 :tx 30 :ty 26
+    :stops [{:offset "0.0664206" :color "white"}
+            {:offset "0.293827" :color "#FFFFDA"}
+            {:offset "0.594666" :color "#FFF1C8"}
+            {:offset "0.776534" :color "#ECCEBB"}
+            {:offset "1" :color "white"}]}
+
+   :golden
+   {:type :matrix
+    :a -13.3582 :b 41.5937 :c -24.3029 :d -6.61134 :tx 31.3419 :ty 22.4688
+    :stops [{:offset "0.0664206" :color "#F3F1D5"}
+            {:offset "0.25" :color "#F4DF9C"}
+            {:offset "0.475962" :color "#F6C985"}
+            {:offset "0.706731" :color "#F7C180"}
+            {:offset "0.889423" :color "#F6CD9A"}]}
+
+   :tan
+   {:type :matrix
+    :a -13.3002 :b 41.413 :c -24.1974 :d -6.58262 :tx 31.234 :ty 22.395
+    :stops [{:offset "0.0664206" :color "#F7EFB4"}
+            {:offset "0.25" :color "#F2D17A"}
+            {:offset "0.475962" :color "#EAB359"}
+            {:offset "0.706731" :color "#D78948"}
+            {:offset "0.889423" :color "#E0A76A"}]}
+
+   :peach
+   {:type :matrix
+    :a -13.1009 :b 40.7924 :c -23.8348 :d -6.48398 :tx 30.8634 :ty 22.1419
+    :stops [{:offset "0.0664206" :color "#F1F1DF"}
+            {:offset "0.25" :color "#F2E1B8"}
+            {:offset "0.475962" :color "#F3C996"}
+            {:offset "0.706731" :color "#F6B08B"}
+            {:offset "0.889423" :color "#F5C2A3"}]}
+
+   :deep-brown
+   {:type :matrix
+    :a -12.9887 :b 41.3582 :c -23.6308 :d -6.57392 :tx 30.8285 :ty 22.3727
+    :stops [{:offset "0.0336538" :color "#F7B48B"}
+            {:offset "0.336483" :color "#E79047"}
+            {:offset "0.536638" :color "#C16F2E"}
+            {:offset "0.747635" :color "#904A1F"}
+            {:offset "0.920358" :color "#AF6B42"}]}
+
+   :dark-espresso
+   {:type :matrix
+    :a -13.0281 :b 40.5658 :c -23.7024 :d -6.44796 :tx 30.728 :ty 22.0494
+    :stops [{:offset "0.0664206" :color "#B69376"}
+            {:offset "0.212144" :color "#AB7A48"}
+            {:offset "0.409312" :color "#996023"}
+            {:offset "0.736633" :color "#4C290E"}
+            {:offset "0.920443" :color "#68462C"}]}})
+
+(defn head-gradient-transform
+  [{:keys [type tx ty rotate sx sy a b c d]}]
+  (case type
+    :translate
+    (str "translate(" (+ tx head-gradient-x-nudge) " " (+ ty head-gradient-y-nudge)
+         ") rotate(" rotate ") scale(" sx " " sy ")")
+
+    :matrix
+    (str "matrix(" a " " b " " c " " d " "
+         (+ tx head-gradient-x-nudge) " " (+ ty head-gradient-y-nudge) ")")))
+
+(defn head-fill-node
+  [path skin]
+  (let [skin-key (or skin :light-cream)
+        gradient (get head-skin-gradients skin-key)
+        fallback (get cfg/skin-tones skin-key (get cfg/skin-tones :light-cream))]
+    (if gradient
+      (let [gradient-id (str "head-skin-gradient-" (random-uuid))]
+        [:<>
+         [:defs
+          [:radialGradient
+           {:id gradient-id
+            :cx 0
+            :cy 0
+            :r 1.1
+            :gradientUnits "userSpaceOnUse"
+            :gradientTransform (head-gradient-transform gradient)}
+           (for [{:keys [offset color]} (:stops gradient)]
+             ^{:key (str offset "-" color)}
+             [:stop {:offset offset
+                     :stop-color color}])]]
+         [:path {:d path
+                 :fill (str "url(#" gradient-id ")")}]] )
+      [:path {:d path
+              :fill fallback}])))
+
 (defn make-head
   [path]
   (fn [{:keys [skin]}]
     (asset-root
-     [:path {:d path
-             :fill skin}])))
+     (head-fill-node path skin))))
 
 (def head-001
   (make-head
@@ -71,28 +169,33 @@
 
 (defn head-average [{:keys [skin]}]
   (asset-root
-   [:path {:d "M73 46C71 70.3594 60.7025 80 50 80C39.2975 80 29 70.3594 27 46C27 31.6406 37.2975 20 50 20C62.7025 20 73 31.6406 73 46Z"
-           :fill skin}]))
+   (head-fill-node
+    "M73 46C71 70.3594 60.7025 80 50 80C39.2975 80 29 70.3594 27 46C27 31.6406 37.2975 20 50 20C62.7025 20 73 31.6406 73 46Z"
+    skin)))
 
 (defn head-blocky [{:keys [skin]}]
   (asset-root
-   [:path {:d "M73 46C67 68.3594 80.7025 80 50 80C19.2975 80 33 68.3594 27 46C27 31.6406 37.2975 20 50 20C62.7025 20 73 31.6406 73 46Z"
-           :fill skin}]))
+   (head-fill-node
+    "M73 46C67 68.3594 80.7025 80 50 80C19.2975 80 33 68.3594 27 46C27 31.6406 37.2975 20 50 20C62.7025 20 73 31.6406 73 46Z"
+    skin)))
 
 (defn head-oval [{:keys [skin]}]
   (asset-root
-   [:path {:d "M73 46C73 68.3594 64.7025 80 50 80C35.2975 80 27 68.3594 27 46C27 31.6406 37.2975 20 50 20C62.7025 20 73 31.6406 73 46Z"
-           :fill skin}]))
+   (head-fill-node
+    "M73 46C73 68.3594 64.7025 80 50 80C35.2975 80 27 68.3594 27 46C27 31.6406 37.2975 20 50 20C62.7025 20 73 31.6406 73 46Z"
+    skin)))
 
 (defn head-pointy [{:keys [skin]}]
   (asset-root
-   [:path {:d "M73 46C73 60.3594 56.7025 80 50 80C43.2975 80 27 60.3594 27 46C27 31.6406 37.2975 20 50 20C62.7025 20 73 31.6406 73 46Z"
-           :fill skin}]))
+   (head-fill-node
+    "M73 46C73 60.3594 56.7025 80 50 80C43.2975 80 27 60.3594 27 46C27 31.6406 37.2975 20 50 20C62.7025 20 73 31.6406 73 46Z"
+    skin)))
 
 (defn head-egg [{:keys [skin]}]
   (asset-root
-   [:path {:d "M73 46C73 60.3594 62.7025 80 50 80C37.2975 80 27 60.3594 27 46C27 31.6406 37.2975 20 50 20C62.7025 20 73 31.6406 73 46Z"
-           :fill skin}]))
+   (head-fill-node
+    "M73 46C73 60.3594 62.7025 80 50 80C37.2975 80 27 60.3594 27 46C27 31.6406 37.2975 20 50 20C62.7025 20 73 31.6406 73 46Z"
+    skin)))
 
 (def head-registry
   {:001 {:label "001" :render head-001 :order 1}
@@ -1074,9 +1177,9 @@
 
 (defn head-svg [{:keys [shape skin]}]
   (let [renderer (resolve-renderer :head shape)
-        skin-hex (get cfg/skin-tones skin (get cfg/skin-tones :light-cream))]
+        skin-key (if (contains? cfg/skin-tones skin) skin :light-cream)]
     [:g {:transform (head-transform)}
-     [renderer {:skin skin-hex}]]))
+     [renderer {:skin skin-key}]]))
 
 (defn hair-svg [{:keys [shape color]}]
   (let [renderer (resolve-renderer :hair shape)

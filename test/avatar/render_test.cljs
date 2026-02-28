@@ -2,6 +2,20 @@
   (:require [cljs.test :refer-macros [deftest is testing]]
             [avatar.render :as render]))
 
+(defn hiccup-tags
+  [node]
+  (let [children-of (fn [n]
+                      (cond
+                        (vector? n)
+                        (let [[_ maybe-attrs & children] n]
+                          (if (map? maybe-attrs) children (cons maybe-attrs children)))
+
+                        (seq? n) n
+                        :else nil))]
+    (->> (tree-seq coll? children-of node)
+         (filter vector?)
+         (map first))))
+
 (deftest normalize-spec-converts-and-defaults
   (testing "string values are keywordized and invalid values fall back to defaults"
     (let [spec {:parts {:head {:shape "average" :skin "tan"}
@@ -43,3 +57,9 @@
     (is (= 2.5 (render/clamp-cfg :nose/size 99)))
     (is (= 0.5 (render/clamp-cfg :nose/size -3)))
     (is (= 1.2 (render/clamp-cfg :nose/size 1.2)))))
+
+(deftest head-renderers-include-radial-gradient-defs
+  (let [tags (hiccup-tags (render/head-001 {:skin :light-cream}))]
+    (is (some #{:defs} tags))
+    (is (some #{:radialGradient} tags))
+    (is (some #{:stop} tags))))
