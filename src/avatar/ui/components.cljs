@@ -134,5 +134,4 @@
                     :background "#fff"
                     :cursor "pointer"}
             :on-click on-click}
-           [:div {:style {:transform "scale(2)"}}
-            icon]]))]))])
+           [:div icon]]))]))])
