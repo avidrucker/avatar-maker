@@ -21,6 +21,10 @@
    :glasses/scale {:min 0.5 :max 2.5 :step 0.01}
    :glasses/y-offset {:min -120 :max 120 :step 1}
 
+   :birthmark/size {:min 0.5 :max 3.0 :step 0.1}
+   :birthmark/x-offset {:min -80 :max 80 :step 1}
+   :birthmark/y-offset {:min -120 :max 120 :step 1}
+
    :ears/size {:min 1.0 :max 3.0 :step 0.01}
    :ears/x-offset {:min -40 :max 40 :step 1}
    :ears/y-offset {:min 0 :max 80 :step 1}
@@ -49,6 +53,10 @@
 
    :glasses/base-y 280
    :glasses/scale 3.0
+
+   :birthmark/base-x 11
+   :birthmark/base-y -5
+   :birthmark/base-scale 0.5
 
    :ears/head-rx 160
    :ears/distance-padding 10
@@ -171,6 +179,10 @@
     :mouth {:shape :seventeen :color :natural :size 0.94 :y-offset 10} 
     :ears {:shape :none}
     :other {:category :glasses
+            :birthmark {:shape :none
+                        :size 1.0
+                        :x-offset 0
+                        :y-offset 0}
             :glasses {:shape :none
                       :color :blue
                       :scale 1.0

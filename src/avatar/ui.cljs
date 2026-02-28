@@ -723,6 +723,33 @@
                  :icon (icons/btn-scale-down color)
                  :on-click #(nudge! [:parts :other :glasses :scale] (- ds))}]]]))
 
+(def birthmark-preview-scale
+  1.5)
+
+(defn birthmark-preview-node
+  [shape size x-offset y-offset]
+  (render/birthmark-node {:shape shape
+                          :size size
+                          :x-offset x-offset
+                          :y-offset y-offset
+                          :scale-factor birthmark-preview-scale}))
+
+(defn birthmark-preview-svg [spec shape]
+  (let [head-shape (get-in spec [:parts :head :shape])
+        skin-key (get-in spec [:parts :head :skin])
+        birthmark (get-in spec [:parts :other :birthmark])
+        head-fn (resolve-head-renderer head-shape)]
+    [:svg {:viewBox "-50 -50 100 100"
+           :width 48
+           :height 48
+           :preserveAspectRatio "xMidYMid meet"
+           :style {:display "block"}}
+     [head-fn {:skin skin-key}]
+     (birthmark-preview-node shape
+                             (:size birthmark)
+                             0
+                             0)]))
+
 (def feature-ui
   {:head {:shape {:page-key :shape/head
                   :per-page 9
@@ -794,8 +821,17 @@
                       :swatches-fn (fn [spec]
                                      (let [shape (get-in spec [:parts :other :glasses :shape])
                                            kind (glasses-kind shape)]
-                                       {:page-key (if (= kind :shades) :swatch/shades :swatch/frame)
-                                        :swatches (if (= kind :shades) cfg/shades-swatches cfg/frame-swatches)}))}}})
+                                       {:page-key (if (= kind :shades)
+                                                    :swatch/shades
+                                                    :swatch/frame)
+                                        :swatches (if (= kind :shades)
+                                                    cfg/shades-swatches
+                                                    cfg/frame-swatches)}))}}
+   :birthmark {:shape {:page-key :shape/birthmark
+                       :per-page 9
+                       :entries-fn #(vec (render/sorted-shape-entries :birthmark))
+                       :selected-path [:parts :other :birthmark :shape]
+                       :preview-fn birthmark-preview-svg}}})
 
 (defn shape-panel [spec feature]
   (let [{:keys [page-key per-page entries-fn selected-path preview-fn]} (get-in feature-ui [feature :shape])
@@ -869,7 +905,15 @@
    [{:row 0 :title "Glasses up" :icon icons/btn-move-up :path [:parts :other :glasses :y-offset] :dir -1 :cfg-key :glasses/y-offset}
     {:row 0 :title "Glasses down" :icon icons/btn-move-down :path [:parts :other :glasses :y-offset] :dir 1 :cfg-key :glasses/y-offset}
     {:row 1 :title "Glasses bigger" :icon icons/btn-scale-up :path [:parts :other :glasses :scale] :dir 1 :cfg-key :glasses/scale}
-    {:row 1 :title "Glasses smaller" :icon icons/btn-scale-down :path [:parts :other :glasses :scale] :dir -1 :cfg-key :glasses/scale}]})
+    {:row 1 :title "Glasses smaller" :icon icons/btn-scale-down :path [:parts :other :glasses :scale] :dir -1 :cfg-key :glasses/scale}]
+
+   :birthmark
+   [{:row 0 :title "Birthmark up" :icon icons/btn-move-up :path [:parts :other :birthmark :y-offset] :dir -1 :cfg-key :birthmark/y-offset}
+    {:row 0 :title "Birthmark down" :icon icons/btn-move-down :path [:parts :other :birthmark :y-offset] :dir 1 :cfg-key :birthmark/y-offset}
+    {:row 1 :title "Birthmark bigger" :icon icons/btn-scale-up :path [:parts :other :birthmark :size] :dir 1 :cfg-key :birthmark/size}
+    {:row 1 :title "Birthmark smaller" :icon icons/btn-scale-down :path [:parts :other :birthmark :size] :dir -1 :cfg-key :birthmark/size}
+    {:row 2 :title "Birthmark left" :icon icons/btn-move-left :path [:parts :other :birthmark :x-offset] :dir -1 :cfg-key :birthmark/x-offset}
+    {:row 2 :title "Birthmark right" :icon icons/btn-move-right :path [:parts :other :birthmark :x-offset] :dir 1 :cfg-key :birthmark/x-offset}]})
 
 (defn nudge-rows [feature]
   (let [color "black"
@@ -922,7 +966,8 @@
      :swatches [swatch-panel spec :glasses]
      :nudge [nudge-panel :glasses]}
 
-    :birthmark {:notice [:div {:style {:font-size 12 :opacity 0.7}} "Birthmark coming soon."]}
+    :birthmark {:shape [shape-panel spec :birthmark]
+                :nudge [nudge-panel :birthmark]}
     :mustache {:notice [:div {:style {:font-size 12 :opacity 0.7}} "Mustaches coming soon."]}
     :beard {:notice [:div {:style {:font-size 12 :opacity 0.7}} "Beards coming soon."]}
     {:notice [:div {:style {:font-size 12 :opacity 0.7}} "Coming soon."]}))

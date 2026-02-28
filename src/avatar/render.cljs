@@ -26,6 +26,8 @@
    [:g {:transform "translate(-50 -50)"}]
    (with-keys children)))
 
+(declare resolve-renderer clamp-cfg)
+
 ;; -------------------------
 ;; Head renderers
 ;; -------------------------
@@ -289,6 +291,46 @@
   (make-hair
    {:front
     "M29.5 37.5L28.25 54L20 43L22.5 40L19 30.5L27.5 26.25V25H28.1429L29 19H30V11.5L44.5 14L50.5 8L56 14L70.5 11.5V19H71.5L71.9286 25H73.0556V26.5L81.5 30.5L78 40L80.25 42.75L71.5 54L70.5 37L59.5 29L50.5 28.5L40.5 29L29.5 37.5Z"}))
+
+;; -------------------------
+;; Birthmark renderers
+;; -------------------------
+
+(def birthmark-origin
+  "Intrinsic anchor point of the birthmark asset itself."
+  {:x 27
+   :y 72})
+
+(defn make-birthmark
+  [element]
+  (fn birthmark-renderer []
+    (let [[tag attrs] element]
+      [tag attrs])))
+
+(defn birthmark-none [] nil)
+
+(def birthmark-001
+  (make-birthmark
+   [:circle {:cx 27
+             :cy 72
+             :r 2
+             :fill "black"}]))
+
+(defn birthmark-node
+  [{:keys [shape size x-offset y-offset scale-factor]}]
+  (when (and shape (not= shape :none))
+    (let [renderer (resolve-renderer :birthmark shape)
+          sc (* (or scale-factor 1.0)
+                (clamp-cfg :birthmark/size (or size 1.0)))
+          xoff (+ (:birthmark/base-x cfg/geometry)
+                  (clamp-cfg :birthmark/x-offset (or x-offset 0)))
+          yoff (+ (:birthmark/base-y cfg/geometry)
+                  (clamp-cfg :birthmark/y-offset (or y-offset 0)))
+          {:keys [x y]} birthmark-origin]
+      [:g {:transform "translate(-50 -50)"}
+       [:g {:transform (str "translate(" (+ x xoff) " " (+ y yoff) ")")}
+        [:g {:transform (str "scale(" sc ") translate(" (- x) " " (- y) ")")}
+         (renderer)]]])))
 
 ;; -------------------------
 ;; Eye renderers
@@ -936,13 +978,19 @@
    :hair
    {:default :bald
     :shapes
-   {:bald {:label "Bald" :render hair-bald :order 0}
+    {:bald {:label "Bald" :render hair-bald :order 0}
      :one {:label "Hair 001" :render hair-001 :order 1}
      :two {:label "Hair 002" :render hair-002 :order 2}
      :three {:label "Hair 003" :render hair-003 :order 3}
      :four {:label "Hair 004" :render hair-004 :order 4}
      :five {:label "Hair 005" :render hair-005 :order 5}
      :six {:label "Hair 006" :render hair-006 :order 6}}}
+
+   :birthmark
+   {:default :none
+    :shapes
+    {:none {:label "None" :render birthmark-none :order 0}
+     :one {:label "Birthmark 001" :render birthmark-001 :order 1}}}
 
    :eyes
    {:default :001
@@ -1101,6 +1149,21 @@
                               :scale (or (:scale g) 1.0)
                               :y-offset (or (:y-offset g) 0))))))))
 
+(defn normalize-birthmark [spec]
+  (let [shape-default (get-in feature-registry [:birthmark :default])]
+    (-> spec
+        (update-in [:parts :other] #(or % {}))
+        (update-in [:parts :other :birthmark]
+                   (fn [b]
+                     (let [b (or b {})
+                           shape (->kw (:shape b))
+                           shape (if (valid-shape? :birthmark shape) shape shape-default)]
+                       (assoc b
+                              :shape shape
+                              :size (or (:size b) 1.0)
+                              :x-offset (or (:x-offset b) 0)
+                              :y-offset (or (:y-offset b) 0))))))))
+
 (defn normalize-spec [spec]
   (-> spec
       (normalize-feature :eyes)
@@ -1111,6 +1174,7 @@
       (normalize-feature :hair)
       (normalize-feature :brows)
       (normalize-glasses)
+      (normalize-birthmark)
       (update-in [:parts :head :skin] ->color-kw)
       (update-in [:parts :eyes :iris] ->color-kw)
       (update-in [:parts :hair :color] ->color-kw)
@@ -1153,7 +1217,10 @@
 
       (update-in [:parts :eyes :rotation] #(or % 0))
       (update-in [:parts :other :glasses :scale] #(or % 1.0))
-      (update-in [:parts :other :glasses :y-offset] #(or % 0))))
+      (update-in [:parts :other :glasses :y-offset] #(or % 0))
+      (update-in [:parts :other :birthmark :size] #(or % 1.0))
+      (update-in [:parts :other :birthmark :x-offset] #(or % 0))
+      (update-in [:parts :other :birthmark :y-offset] #(or % 0))))
 
 (defn clamp
   [mn mx v]
@@ -1286,8 +1353,17 @@
                            "scale(" final-scale ")")}
        (renderer {:color color})])))
 
+(defn birthmark-svg [{:keys [shape size x-offset y-offset]}]
+  (when-let [node (birthmark-node {:shape shape
+                                   :size size
+                                   :x-offset x-offset
+                                   :y-offset y-offset
+                                   :scale-factor (:birthmark/base-scale cfg/geometry)})]
+    [:g {:transform (head-transform)}
+     node]))
+
 (defn avatar->hiccup
-  "Layering: back hair -> ears -> head -> mouth -> nose -> eyes -> brows -> front hair -> glasses."
+  "Layering: back hair -> ears -> head -> birthmark -> mouth -> nose -> eyes -> brows -> front hair -> glasses."
   ([spec]
    (avatar->hiccup spec {}))
   ([spec svg-attrs]
@@ -1297,9 +1373,10 @@
          base-svg-attrs {:xmlns "http://www.w3.org/2000/svg"
                          :viewBox "0 0 512 512"}]
      [:svg (merge base-svg-attrs svg-attrs)
-      back
-      (ears-svg ears head)
-      (head-svg head)
+     back
+     (ears-svg ears head)
+     (head-svg head)
+      (birthmark-svg (get-in spec* [:parts :other :birthmark]))
       (mouth-svg mouth)
       (nose-svg nose head)
       (eyes-svg eyes)
