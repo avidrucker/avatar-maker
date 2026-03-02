@@ -68,6 +68,20 @@
 (defn save-other-subcategory! [subcat]
   (.setItem js/localStorage db/other-subcategory-key (name subcat)))
 
+(defn load-theme-mode [default]
+  (let [allowed #{:system :light :dark}
+        raw (.getItem js/localStorage db/theme-mode-key)
+        kw (when (seq raw) (keyword raw))]
+    (if (contains? allowed kw) kw default)))
+
+(defn save-theme-mode! [theme-mode]
+  (.setItem js/localStorage db/theme-mode-key (name theme-mode)))
+
+(defn apply-theme! [theme-mode]
+  (.setAttribute (.-documentElement js/document)
+                 "data-theme"
+                 (name (or theme-mode :system))))
+
 (defn load-mobile-subpanel [default]
   (let [raw (.getItem js/localStorage db/mobile-subpanel-key)
         raw* (some-> raw
@@ -182,6 +196,7 @@
   ;; Restore persisted values once per init and keep them synced.
   (state/reset-spec! (or (load-spec) cfg/default-spec))
   (state/swap-ui! assoc
+                  :theme-mode (load-theme-mode :system)
                   :show-svg? (load-bool db/show-svg-key false)
                   :show-presets? (load-bool db/show-presets-key false)
                   :hidden-preset-ids (load-hidden-preset-ids)
@@ -189,6 +204,7 @@
                   :mobile-subpanel (load-mobile-subpanel :shape)
                   :active-feature (load-active-feature :head)
                   :other-subcategory (load-other-subcategory :glasses))
+  (apply-theme! (get-in (state/ui) [:theme-mode]))
 
   (remove-watch state/!app ::persist-app)
   (add-watch state/!app ::persist-app
@@ -201,6 +217,8 @@
                      new-show-presets? (get-in new-app [:ui :show-presets?])
                      old-feature (get-in old-app [:ui :active-feature])
                      new-feature (get-in new-app [:ui :active-feature])
+                     old-theme-mode (get-in old-app [:ui :theme-mode])
+                     new-theme-mode (get-in new-app [:ui :theme-mode])
                      old-subcat (get-in old-app [:ui :other-subcategory])
                      new-subcat (get-in new-app [:ui :other-subcategory])
                      old-mobile-subpanel (get-in old-app [:ui :mobile-subpanel])
@@ -217,6 +235,9 @@
                    (save-bool! db/show-presets-key new-show-presets?))
                  (when (not= old-feature new-feature)
                    (save-active-feature! new-feature))
+                 (when (not= old-theme-mode new-theme-mode)
+                   (save-theme-mode! new-theme-mode)
+                   (apply-theme! new-theme-mode))
                  (when (not= old-subcat new-subcat)
                    (save-other-subcategory! new-subcat))
                  (when (not= old-mobile-subpanel new-mobile-subpanel)

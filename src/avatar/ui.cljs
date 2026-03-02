@@ -90,8 +90,8 @@
               :width 68
               :height 68
               :padding 6
-              :border (if selected? "2px solid #333" "1px solid #ccc")
-              :background "#fff"
+              :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+              :background "var(--surface-color)"
               :border-radius 10
               :cursor "pointer"}
       :on-click #(state/swap-spec! assoc-in [:parts :head :shape] shape)}
@@ -106,6 +106,16 @@
 (def feature-button-gap 6)
 (def swatch-button-gap 6)
 (declare color-swatch-button)
+
+(defn next-theme-mode [theme-mode]
+  (case theme-mode
+    :system :light
+    :light :dark
+    :dark :system
+    :system))
+
+(defn theme-button-label [theme-mode]
+  (str "Theme: " (str/capitalize (name (or theme-mode :system)))))
 
 (defn head-shape-panel [spec]
   [:div
@@ -150,7 +160,7 @@
             :height 32
             :padding 0
             :border-radius 8
-            :border (if selected? "2px solid #333" "1px solid #ccc")
+            :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
             :cursor "pointer"
             :background (:hex swatch)}
     :on-click on-click}])
@@ -198,9 +208,9 @@
                     :justify-content "center"
                     :padding 6
                     :border (if (= selected-shape k)
-                              "2px solid #333"
-                              "1px solid #ccc")
-                    :background "#fff"
+                              "2px solid var(--selected-border-color)"
+                              "1px solid var(--border-color)")
+                    :background "var(--surface-color)"
                     :border-radius 10
                     :cursor "pointer"}
             :on-click #(state/swap-spec! assoc-in [:parts :hair :shape] k)}
@@ -246,8 +256,8 @@
               :width 68
               :height 68
               :padding 6
-              :border (if selected? "2px solid #333" "1px solid #ccc")
-              :background "#fff"
+              :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+              :background "var(--surface-color)"
               :border-radius 10
               :cursor "pointer"}
       :on-click #(state/swap-spec! assoc-in [:parts :eyes :shape] shape)}
@@ -350,11 +360,12 @@
    {:title title
     :aria-label title
     :class "w23 h23 w3-ns h3-ns"
-    :style {:display "flex"
-            :align-items "center"
-            :justify-content "center"
-            :border (if selected? "2px solid #333" "1px solid #ccc")
-            :background "#fff"
+   :style {:display "flex"
+           :align-items "center"
+           :justify-content "center"
+            :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+            :background "var(--surface-color)"
+            :color "var(--icon-color)"
             :cursor "pointer"}
     :on-click on-click}
    [:div {:style {:transform "scale(2)"}}
@@ -381,15 +392,15 @@
               :width 68
               :height 68
               :padding 6
-              :border (if selected? "2px solid #333" "1px solid #ccc")
-              :background "#fff"
+              :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+              :background "var(--surface-color)"
               :border-radius 10
               :cursor "pointer"}
       :on-click #(state/swap-spec! assoc-in [:parts :brows :shape] shape)}
      (brow-preview-svg shape brow-color)]))
 
 (defn brows-nudge-controls []
-  (let [color "black"
+  (let [color "currentColor"
         dy (nudge-delta :brows/y-offset)
         ds (nudge-delta :brows/size)
         dr (nudge-delta :brows/rotation)
@@ -425,7 +436,7 @@
                  :on-click #(nudge! [:parts :brows :x-offset] dx)}]]]))
 
 (defn eyes-nudge-controls []
-  (let [color "black"
+  (let [color "currentColor"
         dy (nudge-delta :eyes/y-offset)
         ds (nudge-delta :eyes/size)
         dr (nudge-delta :eyes/rotation)
@@ -479,8 +490,8 @@
               :width 68
               :height 68
               :padding 6
-              :border (if selected? "2px solid #333" "1px solid #ccc")
-              :background "#fff"
+              :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+              :background "var(--surface-color)"
               :border-radius 10
               :cursor "pointer"}
       :on-click #(state/swap-spec! assoc-in [:parts :nose :shape] shape)}
@@ -500,7 +511,7 @@
           (nose-shape-button spec k label)))]] )])
 
 (defn nose-nudge-controls []
-  (let [color "black"
+  (let [color "currentColor"
         dy (nudge-delta :nose/y-offset)
         ds (nudge-delta :nose/size)]
     [:div {:style {:display "grid" :gap 0}}
@@ -540,8 +551,8 @@
               :width 68
               :height 68
               :padding 6
-              :border (if selected? "2px solid #333" "1px solid #ccc")
-              :background "#fff"
+              :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+              :background "var(--surface-color)"
               :border-radius 10
               :cursor "pointer"}
       :on-click #(state/swap-spec! assoc-in [:parts :mouth :shape] shape)}
@@ -580,7 +591,7 @@
                               (:key swatch))}]))]]]))
 
 (defn mouth-nudge-controls []
-  (let [color "black"
+  (let [color "currentColor"
         dy (nudge-delta :mouth/y-offset)
         ds (nudge-delta :mouth/size)]
     [:div {:style {:display "grid" :gap 0}}
@@ -660,8 +671,8 @@
               :width 68
               :height 68
               :padding 6
-              :border (if selected? "2px solid #333" "1px solid #ccc")
-              :background "#fff"
+              :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+              :background "var(--surface-color)"
               :border-radius 10
               :cursor "pointer"}
       :on-click #(state/swap-spec! assoc-in [:parts :other :glasses :shape] shape)}
@@ -704,7 +715,7 @@
                               (:key swatch))}]))]]]))
 
 (defn glasses-nudge-controls []
-  (let [color "black"
+  (let [color "currentColor"
         dy (nudge-delta :glasses/y-offset)
         ds (nudge-delta :glasses/scale)]
     [:div {:style {:display "grid" :gap 0}}
@@ -916,7 +927,7 @@
     {:row 2 :title "Birthmark right" :icon icons/btn-move-right :path [:parts :other :birthmark :x-offset] :dir 1 :cfg-key :birthmark/x-offset}]})
 
 (defn nudge-rows [feature]
-  (let [color "black"
+  (let [color "currentColor"
         items (get nudge-specs feature)]
     (when (seq items)
       (->> items
@@ -936,10 +947,10 @@
     [comp/nudge-pad {:rows rows}]))
 
 (def other-subcategory-tabs
-  [{:value :glasses :label "Glasses" :icon (icons/icon-glasses "black")}
-   {:value :birthmark :label "Birthmark" :icon (icons/icon-birthmark "black")}
-   {:value :mustache :label "Mustache" :icon (icons/icon-mustache "black")}
-   {:value :beard :label "Beard" :icon (icons/icon-beard "black")}])
+  [{:value :glasses :label "Glasses" :icon (icons/icon-glasses "currentColor")}
+   {:value :birthmark :label "Birthmark" :icon (icons/icon-birthmark "currentColor")}
+   {:value :mustache :label "Mustache" :icon (icons/icon-mustache "currentColor")}
+   {:value :beard :label "Beard" :icon (icons/icon-beard "currentColor")}])
 
 (defn other-subcategory-tabs-row []
   [:div {:class "mb2 flex flex-wrap justify-center"}
@@ -955,8 +966,9 @@
           :style {:display "flex"
                   :align-items "center"
                   :justify-content "center"
-                  :border (if active? "2px solid blue" "1px solid gray")
-                  :background (if active? "#eef5ff" "white")}}
+                  :color "var(--icon-color)"
+                  :border (if active? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+                  :background (if active? "var(--accent-soft-color)" "var(--surface-color)")}}
          icon])))])
 
 (defn other-feature-sections [spec]
@@ -978,13 +990,13 @@
 
 (def feature-tab-buttons
   ;; Simple + friendly for now; we can swap in SVG icons later (like v015).
-  [{:value :head  :label "Head"  :icon (icons/icon-head "black")}
-   {:value :hair  :label "Hair"  :icon (icons/icon-hair "black")}
-   {:value :brows :label "Brows" :icon (icons/icon-brows "black")}
-   {:value :eyes  :label "Eyes"  :icon (icons/icon-eyes "black")}
-   {:value :nose  :label "Nose"  :icon (icons/icon-nose "black")}
-   {:value :mouth :label "Mouth" :icon (icons/icon-mouth "black")}
-   {:value :other :label "Other" :icon (icons/icon-other "black")}])
+  [{:value :head  :label "Head"  :icon (icons/icon-head "currentColor")}
+   {:value :hair  :label "Hair"  :icon (icons/icon-hair "currentColor")}
+   {:value :brows :label "Brows" :icon (icons/icon-brows "currentColor")}
+   {:value :eyes  :label "Eyes"  :icon (icons/icon-eyes "currentColor")}
+   {:value :nose  :label "Nose"  :icon (icons/icon-nose "currentColor")}
+   {:value :mouth :label "Mouth" :icon (icons/icon-mouth "currentColor")}
+   {:value :other :label "Other" :icon (icons/icon-other "currentColor")}])
 
 (defn feature-tab-btn [{:keys [value label icon]}]
   (let [active? (= (get-in (state/ui) [:active-feature]) value)]
@@ -997,8 +1009,9 @@
       :style {:display "flex"
               :align-items "center"
               :justify-content "center"
-              :border (if active? "2px solid blue" "1px solid gray")
-              :background (if active? "#eef5ff" "white")}}
+              :color "var(--icon-color)"
+              :border (if active? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+              :background (if active? "var(--accent-soft-color)" "var(--surface-color)")}}
      icon]))
 
 (defn feature-tab-buttons-row []
@@ -1042,8 +1055,9 @@
                          (storage/save-mobile-subpanel! value))
             :class "pa2"
             :style {:opacity (if enabled? 1 0.35)
-                    :border (if selected? "2px solid blue" "1px solid gray")
-                    :background (if selected? "#eef5ff" "white")}}
+                    :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+                    :background (if selected? "var(--accent-soft-color)" "var(--surface-color)")
+                    :color "var(--text-color)"}}
            label])))]))
 
 (defn mobile-active-subpanel-content [sections]
@@ -1098,8 +1112,8 @@
                :width 88
                :height 102
                :padding 4
-               :border (if selected? "2px solid #333" "1px solid #ccc")
-               :background "#fff"
+               :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+               :background "var(--surface-color)"
                :border-radius 8
                :cursor "pointer"}}
       [render/avatar->hiccup preset {:width 72 :height 72}]
@@ -1214,9 +1228,9 @@
         :style {:font-size 12
                 :cursor "text"
                 :padding "2px 6px"
-                :border "1px solid #ccc"
+                :border "1px solid var(--border-color)"
                 :border-radius 6
-                :background "white"}
+                :background "var(--surface-color)"}
         :on-click #(start-name-edit! spec)}
        display-name])))
 
@@ -1225,11 +1239,12 @@
         show-edn? (get-in (state/ui) [:show-edn?])
         show-about? (get-in (state/ui) [:show-about?])
         show-presets? (get-in (state/ui) [:show-presets?])
+        theme-mode (get-in (state/ui) [:theme-mode])
         save-disabled? (duplicate-current-preset?)
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
     [:footer
-     {:class "footer bg-white ba b--black-20 br3 pa1 mt2 fixed-ns bottom-0 left-0 right-0"}
+     {:class "footer themed-panel br3 pa1 mt2 fixed-ns bottom-0 left-0 right-0"}
      [:div {:class "flex flex-wrap items-center"}
       [:button {:class "ma1"
                 :title "Reset the current avatar back to the default"
@@ -1246,6 +1261,10 @@
       [:button {:class "ma1"
                 :on-click #(state/swap-ui! update :show-presets? not)}
        (if show-presets? "Hide Presets" "Presets")]
+      [:button {:class "ma1"
+                :title "Cycle theme mode between system, light, and dark"
+                :on-click #(state/swap-ui! update :theme-mode next-theme-mode)}
+       (theme-button-label theme-mode)]
       [:button 
        {:class "ma1"
         :disabled save-disabled?
@@ -1317,7 +1336,7 @@
 
         (when (get-in (state/ui) [:edn-import-error])
           [:div {:style {:margin-top "8px"
-                         :color "#a00"
+                         :color "var(--danger-color, #c53030)"
                          :font-size 12}}
            (get-in (state/ui) [:edn-import-error])])])]))
 
@@ -1333,17 +1352,17 @@
 
      [:div
       ;; feature tab buttons that render for tablet and desktop 
-      {:class "dn db-ns ba b--black-20 br3 mb2"}
+      {:class "dn db-ns themed-panel br3 mb2"}
       [feature-tab-buttons-row]]
 
-     [:div {:class "feature-tab-buttons-row-mobile ba b--black-20 br3 pa2 db dn-ns mr-auto ml-auto mr0-ns ml0-ns mb2 mb0-ns"}
+     [:div {:class "feature-tab-buttons-row-mobile themed-panel br3 pa2 db dn-ns mr-auto ml-auto mr0-ns ml0-ns mb2 mb0-ns"}
       [feature-tab-buttons-row]]
 
      [:div
       {:class "flex flex-column flex-row-ns items-start justify-center-ns"}
 
       [:div
-       {:class "avatar-preview-container relative w-100 w-50-ns measure-narrow mr-auto ml-auto ba b--black-20 br3 mb2 mb0-ns mr2-ns ml0-ns"
+       {:class "avatar-preview-container themed-panel relative w-100 w-50-ns measure-narrow mr-auto ml-auto br3 mb2 mb0-ns mr2-ns ml0-ns"
         :style {:flex "0 0 auto"}}
        [:div {:class "absolute top-0 right-0 pa2 dn-ns"}
         [avatar-name-editor spec]]
@@ -1352,7 +1371,7 @@
         [avatar-name-editor spec]]] 
 
       [:div
-       {:class "mobile-subpanel-container w-100 flex-ns flex-column ba b--black-20 br3 pa2 mr-auto ml-auto mr0-ns ml0-ns"}
+       {:class "mobile-subpanel-container themed-panel w-100 flex-ns flex-column br3 pa2 mr-auto ml-auto mr0-ns ml0-ns"}
        [:div {:class "mobile-tabbed-subpanel"}
         (when prefix
           [:div prefix])

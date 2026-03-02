@@ -3,6 +3,7 @@
 
 (def default-ui
   {:active-feature :head
+   :theme-mode :system
    :ui-pages {}
    :other-subcategory :glasses
    :show-svg? false

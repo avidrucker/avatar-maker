@@ -1,6 +1,115 @@
+html,
+body {
+    min-height: 100%;
+}
+
+:root,
+[data-theme="light"] {
+    color-scheme: light;
+    --bg-color: #f5f1ea;
+    --surface-color: #fffdf9;
+    --surface-muted-color: #f2ebe1;
+    --text-color: #211d18;
+    --muted-text-color: #675f57;
+    --border-color: rgba(33, 29, 24, 0.18);
+    --selected-border-color: #1e40af;
+    --accent-soft-color: #e8f0ff;
+    --icon-color: #111111;
+    --link-color: #1e40af;
+    --danger-color: #b42318;
+}
+
+[data-theme="dark"] {
+    color-scheme: dark;
+    --bg-color: #14110f;
+    --surface-color: #211b18;
+    --surface-muted-color: #2a231f;
+    --text-color: #f5efe5;
+    --muted-text-color: #c1b7aa;
+    --border-color: rgba(245, 239, 229, 0.2);
+    --selected-border-color: #8ab4ff;
+    --accent-soft-color: #1c2d46;
+    --icon-color: #f8f4ee;
+    --link-color: #8ab4ff;
+    --danger-color: #ff8f8f;
+}
+
+@media (prefers-color-scheme: dark) {
+    [data-theme="system"] {
+        color-scheme: dark;
+        --bg-color: #14110f;
+        --surface-color: #211b18;
+        --surface-muted-color: #2a231f;
+        --text-color: #f5efe5;
+        --muted-text-color: #c1b7aa;
+        --border-color: rgba(245, 239, 229, 0.2);
+        --selected-border-color: #8ab4ff;
+        --accent-soft-color: #1c2d46;
+        --icon-color: #f8f4ee;
+        --link-color: #8ab4ff;
+        --danger-color: #ff8f8f;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    [data-theme="system"] {
+        color-scheme: light;
+        --bg-color: #f5f1ea;
+        --surface-color: #fffdf9;
+        --surface-muted-color: #f2ebe1;
+        --text-color: #211d18;
+        --muted-text-color: #675f57;
+        --border-color: rgba(33, 29, 24, 0.18);
+        --selected-border-color: #1e40af;
+        --accent-soft-color: #e8f0ff;
+        --icon-color: #111111;
+        --link-color: #1e40af;
+        --danger-color: #b42318;
+    }
+}
+
 body {
     padding: 0;
     margin: 0;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+a {
+    color: var(--link-color);
+}
+
+button,
+input,
+textarea,
+select {
+    background: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+textarea,
+input {
+    caret-color: var(--text-color);
+}
+
+.theme-icon {
+    color: var(--icon-color);
+}
+
+.themed-panel {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+}
+
+.themed-surface {
+    background: var(--surface-color);
+    color: var(--text-color);
+}
+
+.themed-surface-muted {
+    background: var(--surface-muted-color);
+    color: var(--text-color);
 }
 
 .mobile-subpanel-container {
@@ -21,6 +130,7 @@ body {
 
 .notice-text {
     text-align: center;
+    color: var(--muted-text-color);
 }
 
 .preset-delete-btn {

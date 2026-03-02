@@ -10,12 +10,15 @@
              :style {:display "flex"
                      :align-items "center"
                      :gap "8px"}}
-       [:button {:disabled prev-disabled?
+      [:button {:disabled prev-disabled?
                  :title "Previous"
                  :aria-label "Previous"
                  :style {:width 28
                          :height 24
-                         :opacity (if prev-disabled? 0.35 1)}
+                         :opacity (if prev-disabled? 0.35 1)
+                         :border "1px solid var(--border-color)"
+                         :background "var(--surface-color)"
+                         :color "var(--text-color)"}
                  :on-click on-prev}
         "◀"]
        [:div {:style {:font-size 12}}
@@ -25,7 +28,10 @@
                  :aria-label "Next"
                  :style {:width 28
                          :height 24
-                         :opacity (if next-disabled? 0.35 1)}
+                         :opacity (if next-disabled? 0.35 1)
+                         :border "1px solid var(--border-color)"
+                         :background "var(--surface-color)"
+                         :color "var(--text-color)"}
                  :on-click on-next}
         "▶"]])))
 
@@ -47,8 +53,9 @@
             :width width
             :height height
             :padding 6
-            :border (if selected? "2px solid #333" "1px solid #ccc")
-            :background "#fff"
+            :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+            :background "var(--surface-color)"
+            :color "var(--icon-color)"
             :border-radius 10
             :cursor "pointer"}
     :on-click on-click}
@@ -63,7 +70,7 @@
             :height 32
             :padding 0
             :border-radius 8
-            :border (if selected? "2px solid #333" "1px solid #ccc")
+            :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
             :cursor "pointer"
             :background (:hex swatch)}
     :on-click on-click}])
@@ -130,8 +137,9 @@
             :style {:display "flex"
                     :align-items "center"
                     :justify-content "center"
-                    :border (if selected? "2px solid #333" "1px solid #ccc")
-                    :background "#fff"
+                    :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+                    :background "var(--surface-color)"
+                    :color "var(--icon-color)"
                     :cursor "pointer"}
             :on-click on-click}
            [:div icon]]))]))])

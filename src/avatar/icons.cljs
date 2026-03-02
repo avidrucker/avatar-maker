@@ -1,20 +1,24 @@
 (ns avatar.icons)
 
+(defn- icon-color [color]
+  (or color "currentColor"))
+
 (defn icon-svg
   "Wrap a 100x100 icon in a consistent svg shell."
   [children]
   [:svg {:viewBox "0 0 100 100"
-         :class "w2 h2 w23-ns h23-ns"
+         :class "w2 h2 w23-ns h23-ns theme-icon"
          :aria-hidden true}
    children])
 
 (defn paths-icon
   "Create an icon from raw SVG path/circle hiccup using a single color."
   [color & elements]
-  (icon-svg
-   (for [el elements]
-     (let [[tag attrs] el]
-       [tag (assoc attrs :fill color)]))))
+  (let [fill (icon-color color)]
+    (icon-svg
+     (for [el elements]
+       (let [[tag attrs] el]
+         [tag (assoc attrs :fill fill)])))))
 
 (defn icon-beard [color]
   (paths-icon color
@@ -37,13 +41,14 @@
               [:path {:d "M77.5 50C77.5 34.8122 65.1878 22.5 50 22.5C34.8122 22.5 22.5 34.8122 22.5 50C22.5 65.1878 34.8122 77.5 50 77.5C65.1878 77.5 77.5 65.1878 77.5 50ZM82.5 50C82.5 67.9493 67.9493 82.5 50 82.5C32.0507 82.5 17.5 67.9493 17.5 50C17.5 32.0507 32.0507 17.5 50 17.5C67.9493 17.5 82.5 32.0507 82.5 50Z"}]))
 
 (defn icon-other [color]
+  (let [fill (icon-color color)]
   (icon-svg
    [:<>
     [:path {:d "M68.5 36C77.8888 36 85.5 43.6112 85.5 53C85.5 62.3888 77.8888 70 68.5 70C59.9605 70 52.8927 63.7035 51.6836 55.5H48.3164C47.1073 63.7035 40.0395 70 31.5 70C22.1112 70 14.5 62.3888 14.5 53C14.5 43.6112 22.1112 36 31.5 36C40.0395 36 47.1073 42.2965 48.3164 50.5H51.6836C52.8927 42.2965 59.9605 36 68.5 36ZM31.5 41C24.8726 41 19.5 46.3726 19.5 53C19.5 59.6274 24.8726 65 31.5 65C38.1274 65 43.5 59.6274 43.5 53C43.5 46.3726 38.1274 41 31.5 41ZM68.5 41C61.8726 41 56.5 46.3726 56.5 53C56.5 59.6274 61.8726 65 68.5 65C75.1274 65 80.5 59.6274 80.5 53C80.5 46.3726 75.1274 41 68.5 41Z"
-            :fill color}]
-    [:circle {:cx 74 :cy 77 :r 3 :fill color}]
+            :fill fill}]
+    [:circle {:cx 74 :cy 77 :r 3 :fill fill}]
     [:path {:d "M50 70.0002C40 70 33 83.5002 33 83.5002L40 82.0002V88.5002L46 83.5002L50 88.5002L54.5 83.5002L61 88.5002V82.0002L68 83.5002C68 83.5002 60 70.0005 50 70.0002Z"
-            :fill color}]]))
+            :fill fill}]])))
 
 (defn icon-mouth [color]
   (icon-svg
