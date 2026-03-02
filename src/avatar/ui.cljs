@@ -1242,6 +1242,7 @@
         show-about? (get-in (state/ui) [:show-about?])
         show-presets? (get-in (state/ui) [:show-presets?])
         theme-mode (get-in (state/ui) [:theme-mode])
+        footer-open? (boolean (or show-svg? show-edn? show-about? show-presets?))
         save-disabled? (duplicate-current-preset?)
         svg-source (storage/svg-source)
         edn-export (storage/edn-export)]
@@ -1266,7 +1267,7 @@
       [:button {:class "ma1"
                 :title "Cycle theme mode between system, light, and dark"
                 :on-click #(state/swap-ui! update :theme-mode next-theme-mode)}
-       (theme-button-label theme-mode)]
+       (theme-button-label theme-mode)] 
       [:button 
        {:class "ma1"
         :disabled save-disabled?
@@ -1282,7 +1283,20 @@
                 :on-click #(restore-presets!)
                 :title "Restore all default presets"
                 }
-       "Restore"]]
+       "Restore"]
+      [:button {:class "ma1"
+                :disabled (not footer-open?)
+                :title (if footer-open?
+                         "Close all footer panels"
+                         "No footer panels are open")
+                :style {:opacity (if footer-open? 1.0 0.5)
+                        :cursor (if footer-open? "pointer" "not-allowed")}
+                :on-click #(state/swap-ui! assoc
+                                           :show-svg? false
+                                           :show-edn? false
+                                           :show-about? false
+                                           :show-presets? false)}
+       "Close"]]
 
      (when show-presets?
        [presets-panel])
