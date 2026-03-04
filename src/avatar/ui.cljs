@@ -472,14 +472,17 @@
                  :on-click #(nudge! [:parts :eyes :spacing] dx)}]]]))
 
 (defn nose-preview-svg [shape]
-  (let [nose-fn (render/resolve-renderer :nose shape)]
-    [:svg {:viewBox "0 0 100 100"
+  (let [nose-fn (render/resolve-renderer :nose shape)
+        {:preview/keys [view-box transform]} (meta nose-fn)]
+    [:svg {:viewBox (or view-box "0 0 100 100")
            :width 48
            :height 48
            :style {:display "block"
                    :color "var(--icon-color)"}}
-     [:g {:transform "translate(50 50)"}
-      (nose-fn {:stroke "currentColor" :fill "currentColor"})]]))
+     (if transform
+       [:g {:transform transform}
+        (nose-fn {:mode :preview :fill "currentColor"})]
+       (nose-fn {:mode :preview :fill "currentColor"}))]))
 
 (defn nose-shape-button [spec shape label]
   (let [selected? (= (get-in spec [:parts :nose :shape]) shape)]
