@@ -227,4 +227,6 @@
    
    {:version 16 :preset-id "29137283-fa2e-4bed-9c8a-3b5d36050e7f" :name-id "Karen" :parts {:head {:shape :egg :skin :peach} :eyes {:spacing 0.58 :size 1 :y-offset 12 :rotation 6 :shape :002 :iris :teal} :hair {:shape :four :color :mahogany} :brows {:shape :002 :color :mahogany :size 1.04 :x-offset -8 :y-offset 12 :rotation 16} :nose {:shape :eight :size 1.04 :y-offset 9} :mouth {:shape :sixteen :color :deep-rose :size 0.94 :y-offset 14} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
 
+   {:version 16 :preset-id "d3895417-5934-43ff-8896-291af00437de" :name-id "Eli" :parts {:head {:shape :001 :skin :light-cream} :eyes {:spacing 0.54 :size 1 :y-offset 14 :rotation 0 :shape :001 :iris :blue} :hair {:shape :six :color :medium-brown} :brows {:shape :007 :color :medium-brown :size 1.12 :x-offset -4 :y-offset 10 :rotation 0} :nose {:shape :five :size 0.9 :y-offset 9} :mouth {:shape :nineteen :color :black :size 0.84 :y-offset 18} :ears {:shape :none} :other {:category :glasses :birthmark {:shape :none :size 1 :x-offset 0 :y-offset 0} :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+   
    ])
