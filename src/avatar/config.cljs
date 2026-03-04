@@ -38,7 +38,6 @@
 
    :nose/base-y 320
    :nose/scale 1.25
-   :nose/stroke-width 2
 
    :eyes/base-y 260
    :eyes/dx-scale 110
@@ -175,7 +174,7 @@
     :eyes {:spacing 0.54 :size 1 :y-offset 12 :rotation 0 :shape :002 :iris :brown} 
     :hair {:shape :one :color :espresso} 
     :brows {:shape :004 :color :jet-black :size 1 :x-offset -8 :y-offset 12 :rotation 16} 
-    :nose {:shape :one :stroke "black" :size 1.04 :y-offset -5} 
+    :nose {:shape :one :size 1.04 :y-offset 7} 
     :mouth {:shape :seventeen :color :natural :size 0.94 :y-offset 10} 
     :ears {:shape :none}
     :other {:category :glasses
@@ -199,7 +198,7 @@
      :eyes {:spacing 0.54 :size 1 :y-offset 18 :rotation 0 :shape :006 :iris :brown}
      :hair {:shape :two :color :espresso}
      :brows {:shape :001 :color :jet-black :size 1 :x-offset -4 :y-offset 12 :rotation 16}
-     :nose {:shape :two :stroke "black" :size 1.04 :y-offset 9}
+     :nose {:shape :two :size 1.04 :y-offset 9}
      :mouth {:shape :four :color :black :size 0.94 :y-offset 20}
      :ears {:shape :none}
      :other {:category :glasses
@@ -212,20 +211,20 @@
      :eyes {:spacing 0.58 :size 1 :y-offset 12 :rotation 6 :shape :010 :iris :black}
      :hair {:shape :three :color :jet-black}
      :brows {:shape :005 :color :jet-black :size 1.04 :x-offset -8 :y-offset 12 :rotation 16}
-     :nose {:shape :nine :stroke "black" :size 1.04 :y-offset 17}
+     :nose {:shape :eleven :size 1.04 :y-offset 17}
      :mouth {:shape :sixteen :color :black :size 0.94 :y-offset 14}
      :ears {:shape :none}
      :other {:category :glasses
              :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
 
-   {:version 16 :preset-id "8dd7e77a-a274-4cfc-b8af-04eb614f7f77" :name-id "Feather" :parts {:head {:shape :egg :skin :light-cream} :eyes {:spacing 0.54 :size 1 :y-offset 12 :rotation 0 :shape :001 :iris :gray} :hair {:shape :bald :color :espresso} :brows {:shape :004 :color :chestnut :size 1 :x-offset -8 :y-offset 12 :rotation 16} :nose {:shape :four :stroke "black" :size 0.88 :y-offset -1} :mouth {:shape :three :color :natural :size 0.82 :y-offset 10} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+   {:version 16 :preset-id "8dd7e77a-a274-4cfc-b8af-04eb614f7f77" :name-id "Feather" :parts {:head {:shape :egg :skin :light-cream} :eyes {:spacing 0.54 :size 1 :y-offset 12 :rotation 0 :shape :001 :iris :gray} :hair {:shape :bald :color :espresso} :brows {:shape :004 :color :chestnut :size 1 :x-offset -8 :y-offset 12 :rotation 16} :nose {:shape :four :size 0.88 :y-offset -1} :mouth {:shape :three :color :natural :size 0.82 :y-offset 10} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
 
-   {:version 16 :preset-id "d81d7edf-f2f4-4be7-b5a2-38722e6871a9" :name-id "Kenny" :parts {:head {:shape :egg :skin :golden} :eyes {:spacing 0.5 :size 0.9 :y-offset 12 :rotation 0 :shape :013 :iris :brown} :hair {:shape :bald :color :espresso} :brows {:shape :007 :color :dark-brown :size 1.08 :x-offset -4 :y-offset 0 :rotation 0} :nose {:shape :thirteen :stroke "black" :size 0.96 :y-offset 3} :mouth {:shape :eight :color :brown :size 0.94 :y-offset 10} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+   {:version 16 :preset-id "d81d7edf-f2f4-4be7-b5a2-38722e6871a9" :name-id "Kenny" :parts {:head {:shape :egg :skin :golden} :eyes {:spacing 0.5 :size 0.9 :y-offset 12 :rotation 0 :shape :013 :iris :brown} :hair {:shape :bald :color :espresso} :brows {:shape :007 :color :dark-brown :size 1.08 :x-offset -4 :y-offset 0 :rotation 0} :nose {:shape :thirteen :size 0.96 :y-offset 3} :mouth {:shape :eight :color :brown :size 0.94 :y-offset 10} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
 
-   {:version 16 :preset-id "fcb92e89-d72a-4d31-a34f-e5f0e5a3d8eb" :name-id "Alexander" :parts {:head {:shape :egg :skin :golden} :eyes {:spacing 0.5 :size 0.9 :y-offset 12 :rotation 0 :shape :013 :iris :brown} :hair {:shape :two :color :medium-brown} :brows {:shape :007 :color :dark-brown :size 1.08 :x-offset -4 :y-offset 0 :rotation 0} :nose {:shape :thirteen :stroke "black" :size 0.8 :y-offset 3} :mouth {:shape :five :color :brown :size 0.94 :y-offset 10} :ears {:shape :none} :other {:category :glasses :glasses {:shape :glasses_001 :color :blue :scale 1.06 :y-offset -6}}}}
+   {:version 16 :preset-id "fcb92e89-d72a-4d31-a34f-e5f0e5a3d8eb" :name-id "Alexander" :parts {:head {:shape :egg :skin :golden} :eyes {:spacing 0.5 :size 0.9 :y-offset 12 :rotation 0 :shape :013 :iris :brown} :hair {:shape :two :color :medium-brown} :brows {:shape :007 :color :dark-brown :size 1.08 :x-offset -4 :y-offset 0 :rotation 0} :nose {:shape :thirteen :size 0.8 :y-offset 3} :mouth {:shape :five :color :brown :size 0.94 :y-offset 10} :ears {:shape :none} :other {:category :glasses :glasses {:shape :glasses_001 :color :blue :scale 1.06 :y-offset -6}}}}
    
-   {:version 16 :preset-id "108149d4-1f13-49c4-9bf6-ecfb393f14f4" :name-id "Sarina" :parts {:head {:shape :pointy :skin :dark-espresso} :eyes {:spacing 0.58 :size 1 :y-offset 16 :rotation 0 :shape :003 :iris :black} :hair {:shape :one :color :jet-black} :brows {:shape :004 :color :jet-black :size 1.06 :x-offset -4 :y-offset 16 :rotation 16} :nose {:shape :eight :stroke "black" :size 0.92 :y-offset 1} :mouth {:shape :seventeen :color :black :size 0.94 :y-offset 12} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+   {:version 16 :preset-id "108149d4-1f13-49c4-9bf6-ecfb393f14f4" :name-id "Sarina" :parts {:head {:shape :pointy :skin :dark-espresso} :eyes {:spacing 0.58 :size 1 :y-offset 16 :rotation 0 :shape :003 :iris :black} :hair {:shape :one :color :jet-black} :brows {:shape :004 :color :jet-black :size 1.06 :x-offset -4 :y-offset 16 :rotation 16} :nose {:shape :ten :size 0.92 :y-offset 1} :mouth {:shape :seventeen :color :black :size 0.94 :y-offset 12} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
    
-   {:version 16 :preset-id "29137283-fa2e-4bed-9c8a-3b5d36050e7f" :name-id "Karen" :parts {:head {:shape :egg :skin :peach} :eyes {:spacing 0.58 :size 1 :y-offset 12 :rotation 6 :shape :002 :iris :teal} :hair {:shape :four :color :mahogany} :brows {:shape :002 :color :mahogany :size 1.04 :x-offset -8 :y-offset 12 :rotation 16} :nose {:shape :six :stroke "black" :size 1.04 :y-offset 9} :mouth {:shape :sixteen :color :deep-rose :size 0.94 :y-offset 14} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
+   {:version 16 :preset-id "29137283-fa2e-4bed-9c8a-3b5d36050e7f" :name-id "Karen" :parts {:head {:shape :egg :skin :peach} :eyes {:spacing 0.58 :size 1 :y-offset 12 :rotation 6 :shape :002 :iris :teal} :hair {:shape :four :color :mahogany} :brows {:shape :002 :color :mahogany :size 1.04 :x-offset -8 :y-offset 12 :rotation 16} :nose {:shape :eight :size 1.04 :y-offset 9} :mouth {:shape :sixteen :color :deep-rose :size 0.94 :y-offset 14} :ears {:shape :none} :other {:category :glasses :glasses {:shape :none :color :blue :scale 1 :y-offset 0}}}}
 
    ])
