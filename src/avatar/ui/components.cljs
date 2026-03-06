@@ -77,7 +77,8 @@
 
 (defn shape-picker
   [{:keys [entries paged page-key page-get on-page-prev on-page-next
-           selected on-select render-preview item-width columns gap]}]
+           selected on-select render-preview item-width columns gap
+           placeholder-count]}]
   (let [page (page-get page-key)]
     [:<>
      [pager {:page page
@@ -89,15 +90,21 @@
             :gap (or gap 6)
             :children
             (doall
-             (for [[k {:keys [label]}] (:items paged)]
-               ^{:key (name k)}
-               [selectable-tile-button
-                {:title label
-                 :selected? (= selected k)
-                 :width (or item-width 68)
-                 :height (or item-width 68)
-                 :on-click #(on-select k)
-                 :child (render-preview k)}]))}]]))
+             (concat
+              (for [[k {:keys [label]}] (:items paged)]
+                ^{:key (name k)}
+                [selectable-tile-button
+                 {:title label
+                  :selected? (= selected k)
+                  :width (or item-width 68)
+                  :height (or item-width 68)
+                  :on-click #(on-select k)
+                  :child (render-preview k)}])
+              (for [idx (range (or placeholder-count 0))]
+                ^{:key (str "shape-placeholder-" idx)}
+                [:div {:style {:width (or item-width 68)
+                               :height (or item-width 68)
+                               :visibility "hidden"}}])))}]]))
 
 (defn swatch-picker
   [{:keys [paged page-key page-get on-page-prev on-page-next

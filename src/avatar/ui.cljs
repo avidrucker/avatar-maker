@@ -864,6 +864,7 @@
                    :selected-path [:parts :hair :color]}}
    :eyes {:shape {:page-key :shape/eyes
                   :per-page 9
+                  :fill-with-placeholders? true
                   :entries-fn #(vec (render/sorted-shape-entries :eyes))
                   :selected-path [:parts :eyes :shape]
                   :preview-fn (fn [spec shape]
@@ -886,11 +887,13 @@
                     :selected-path [:parts :brows :color]}}
    :nose {:shape {:page-key :shape/nose
                   :per-page 9
+                  :fill-with-placeholders? true
                   :entries-fn #(vec (render/sorted-shape-entries :nose))
                   :selected-path [:parts :nose :shape]
                   :preview-fn (fn [_ shape] (nose-preview-svg shape))}}
    :mouth {:shape {:page-key :shape/mouth
                    :per-page 9
+                   :fill-with-placeholders? true
                    :entries-fn #(vec (render/sorted-shape-entries :mouth))
                    :selected-path [:parts :mouth :shape]
                    :preview-fn (fn [spec shape]
@@ -924,10 +927,13 @@
                        :preview-fn birthmark-preview-svg}}})
 
 (defn shape-panel [spec feature]
-  (let [{:keys [page-key per-page entries-fn selected-path preview-fn]} (get-in feature-ui [feature :shape])
+  (let [{:keys [page-key per-page entries-fn selected-path preview-fn fill-with-placeholders?]} (get-in feature-ui [feature :shape])
         entries (entries-fn)
         paged (paginate entries (page-get page-key) per-page)
-        selected (get-in spec selected-path)]
+        selected (get-in spec selected-path)
+        placeholder-count (if fill-with-placeholders?
+                            (max 0 (- per-page (count (:items paged))))
+                            0)]
     [comp/shape-picker
      {:entries entries
       :paged paged
@@ -940,7 +946,8 @@
       :render-preview #(preview-fn spec %)
       :item-width 68
       :columns 3
-      :gap feature-button-gap}]))
+      :gap feature-button-gap
+      :placeholder-count placeholder-count}]))
 
 (defn swatch-panel [spec feature]
   (let [{:keys [page-key per-page columns swatches selected-path swatches-fn]} (get-in feature-ui [feature :swatch])
@@ -1208,6 +1215,17 @@
        :style {:cursor "pointer"}}
       "x"]]))
 
+(defn preset-empty-tile [idx]
+  ^{:key (str "preset-empty-" idx)}
+  [:div {:style {:width 88
+                 :height 102
+                 :border "1px solid var(--border-color)"
+                 :border-radius 8
+                 :opacity 0.5
+                 :background "transparent"}}])
+
+(def preset-tiles-per-page 9)
+
 (defn all-presets []
   (vec (concat cfg/presets (get-in (state/ui) [:user-presets]))))
 
@@ -1266,7 +1284,8 @@
                              (sort-by (fn [p] (str/lower-case (or (:name-id p) ""))))
                              vec)
         entries (mapv (fn [p] [(:preset-id p) p]) visible-presets)
-        paged (paginate entries (page-get :preset/page) 9)]
+        paged (paginate entries (page-get :preset/page) preset-tiles-per-page)
+        filler-count (max 0 (- preset-tiles-per-page (count (:items paged))))]
     [:div {:class "mt3"}
      [:div {:style {:font-size 12 :margin-bottom "6px"}} "Presets"]
      (if (seq entries)
@@ -1276,8 +1295,11 @@
                        :grid-template-columns "repeat(3, 88px)"
                        :gap 8}}
          (doall
-          (for [[_ preset] (:items paged)]
-            (preset-button preset current-spec)))]]
+          (concat
+           (for [[_ preset] (:items paged)]
+             (preset-button preset current-spec))
+           (for [idx (range filler-count)]
+             (preset-empty-tile idx))))]]
        [:div {:style {:font-size 12 :opacity 0.7}}
         "No visible presets."])]))
 
