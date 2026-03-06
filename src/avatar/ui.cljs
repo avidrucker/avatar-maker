@@ -1211,6 +1211,22 @@
 (defn all-presets []
   (vec (concat cfg/presets (get-in (state/ui) [:user-presets]))))
 
+(defn preset-id-set
+  []
+  (->> (all-presets)
+       (keep :preset-id)
+       set))
+
+(defn next-unique-preset-id
+  []
+  (let [used-ids (preset-id-set)]
+    (loop [attempt 0]
+      (let [candidate (str (random-uuid))]
+        (cond
+          (not (contains? used-ids candidate)) candidate
+          (>= attempt 50) (str (random-uuid))
+          :else (recur (inc attempt)))))))
+
 (defn preset-signature
   "Canonical form for duplicate detection; ignore only unique preset id."
   [preset]
@@ -1227,10 +1243,11 @@
 (defn save-current-as-preset! []
   (when-not (duplicate-current-preset?)
     (let [spec (or (state/spec) cfg/default-spec)
+          saved-preset-id (next-unique-preset-id)
           saved-preset (assoc (render/normalize-spec spec)
-                              :preset-id (str (random-uuid))
+                              :preset-id saved-preset-id
                               :name-id (or (:name-id spec) "Preset"))
-          next-current-id (str (random-uuid))]
+          next-current-id (next-unique-preset-id)]
       (state/swap-ui! update :user-presets
                       (fn [presets]
                         (conj (vec (or presets [])) saved-preset)))
