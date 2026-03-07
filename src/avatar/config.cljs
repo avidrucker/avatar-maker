@@ -30,6 +30,16 @@
    :ears/y-offset {:min 0 :max 80 :step 1}
    :ears/rotation {:min -45 :max 45 :step 1}})
 
+(def version-switcher-config
+  "Curated build list for the footer version dropdown.
+   build-number must match GitHub Actions run_number."
+  {:include-latest? true
+   :latest-label "Latest"
+   :builds [{:build-number 5 :label "v016"}
+            {:build-number 12 :label "v017"}
+            {:build-number 19 :label "v018"}
+            {:build-number 25 :label "v019"}]})
+
 (def geometry
   {:head/cx 256
    :head/cy 270

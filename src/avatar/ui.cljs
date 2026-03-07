@@ -1504,6 +1504,24 @@
         segment (if (str/blank? token) "" (str token "/"))]
     (str base segment)))
 
+(defn curated-version-options [manifest-builds]
+  (let [{:keys [include-latest? latest-label builds]} cfg/version-switcher-config
+        builds-by-number (into {}
+                               (map (fn [{:keys [run_number sha]}]
+                                      [(str run_number) (str sha)]))
+                               manifest-builds)
+        curated (->> builds
+                     (map (fn [{:keys [build-number label]}]
+                            (let [token (str build-number)
+                                  sha (get builds-by-number token)]
+                              {:token token
+                               :sha (or sha "")
+                               :label label
+                               :available? (boolean sha)})))
+                     vec)]
+    (cond-> curated
+      include-latest? (into [{:token "" :sha "" :label (or latest-label "Latest") :available? true}]))))
+
 (defn load-version-switcher! []
   (when-not @version-switch-init?
     (reset! version-switch-init? true)
@@ -1527,14 +1545,10 @@
             (.then (fn [payload]
                      (let [data (js->clj payload :keywordize-keys true)
                            base-path (normalize-base-path (or (:basePath data) ""))
-                           builds (->> (:builds data)
-                                       (filter map?)
-                                       (map (fn [{:keys [run_number sha]}]
-                                              {:token (str run_number)
-                                               :sha (str sha)
-                                               :label (str "Build #" run_number " (" sha ")")}))
-                                       vec)
-                           options (into [{:token "" :sha "" :label "Latest"}] builds)]
+                           manifest-builds (->> (:builds data)
+                                                (filter map?)
+                                                vec)
+                           options (curated-version-options manifest-builds)]
                        (state/swap-ui! assoc
                                        :versions-loading? false
                                        :versions-base-path base-path
@@ -1596,9 +1610,11 @@
                             (let [token (.. e -target -value)]
                               (set! (.-href js/location)
                                     (version-url versions-base-path token))))}
-              (for [{:keys [token label]} versions-options]
+              (for [{:keys [token label available?]} versions-options]
                 ^{:key token}
-                [:option {:value token} label])]))]))))
+                [:option {:value token
+                          :disabled (not available?)}
+                 label])]))]))))
 
 (defn main-panel []
   (load-version-switcher!)
