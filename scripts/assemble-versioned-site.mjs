@@ -13,6 +13,8 @@ const {
   GITHUB_RUN_NUMBER,
   GITHUB_WORKFLOW_FILE = "pages.yml",
   MAX_BUILDS = "30",
+  REBUILD_MISSING_FROM_SOURCE = "false",
+  MAX_REBUILDS = "0",
 } = process.env;
 
 if (!GITHUB_TOKEN || !GITHUB_REPOSITORY || !GITHUB_SHA || !GITHUB_RUN_NUMBER) {
@@ -23,6 +25,8 @@ const [owner, repo] = GITHUB_REPOSITORY.split("/");
 const runNumber = Number(GITHUB_RUN_NUMBER);
 const sha7 = GITHUB_SHA.slice(0, 7);
 const maxBuilds = Math.max(1, Number(MAX_BUILDS) || 30);
+const rebuildMissingFromSource = REBUILD_MISSING_FROM_SOURCE === "true";
+const maxRebuilds = Math.max(0, Number(MAX_REBUILDS) || 0);
 const srcDir = "public";
 const outDir = "dist-pages";
 const basePath = `/${repo}/`;
@@ -57,6 +61,10 @@ async function copyDirContents(src, dest) {
 async function copyPublicTo(dirPath) {
   await mkdir(dirPath, {recursive: true});
   await copyDirContents(srcDir, dirPath);
+}
+
+async function run(cmd, args, cwd) {
+  await execFileAsync(cmd, args, {cwd});
 }
 
 async function downloadRunArtifact(runId) {
@@ -94,6 +102,26 @@ async function downloadRunArtifact(runId) {
   return {tmpBase, extractDir};
 }
 
+async function rebuildRunFromSource(headSha) {
+  const tmpBase = await mkdtemp(join(tmpdir(), "avatar-rebuild-"));
+  const worktreeDir = join(tmpBase, "worktree");
+  try {
+    await run("git", ["fetch", "--no-tags", "--depth", "1", "origin", headSha]);
+    await run("git", ["worktree", "add", "--detach", worktreeDir, headSha]);
+    await run("npm", ["ci"], worktreeDir);
+    await run("npm", ["run", "build"], worktreeDir);
+    return {tmpBase, buildDir: join(worktreeDir, "public")};
+  } catch {
+    try {
+      await run("git", ["worktree", "remove", "--force", worktreeDir]);
+    } catch {
+      // Best effort cleanup.
+    }
+    await rm(tmpBase, {recursive: true, force: true});
+    return null;
+  }
+}
+
 async function main() {
   await rm(outDir, {recursive: true, force: true});
   await mkdir(outDir, {recursive: true});
@@ -113,6 +141,8 @@ async function main() {
 
   const builds = [];
   const presentTokens = new Set([String(runNumber), sha7]);
+  const sourceByRun = new Map([[String(runNumber), "current"]]);
+  let rebuildCount = 0;
 
   builds.push({
     run_number: runNumber,
@@ -140,6 +170,7 @@ async function main() {
           await copyDirContents(artifact.extractDir, join(outDir, rsha));
           presentTokens.add(String(rn));
           presentTokens.add(rsha);
+          sourceByRun.set(String(rn), "artifact");
           log(`Backfilled build #${rn}.`);
         } catch {
           log(`Skipping build #${rn}; artifact extraction copy failed.`);
@@ -147,7 +178,34 @@ async function main() {
           await rm(artifact.tmpBase, {recursive: true, force: true});
         }
       } else {
-        log(`Skipping build #${rn}; no downloadable artifact found.`);
+        if (rebuildMissingFromSource && rebuildCount < maxRebuilds) {
+          log(`No artifact for #${rn}; rebuilding from source at ${rsha}...`);
+          const rebuilt = await rebuildRunFromSource(run.head_sha);
+          if (rebuilt?.buildDir) {
+            try {
+              await copyDirContents(rebuilt.buildDir, join(outDir, String(rn)));
+              await copyDirContents(rebuilt.buildDir, join(outDir, rsha));
+              presentTokens.add(String(rn));
+              presentTokens.add(rsha);
+              sourceByRun.set(String(rn), "rebuilt");
+              rebuildCount += 1;
+              log(`Rebuilt and backfilled build #${rn}.`);
+            } catch {
+              log(`Skipping build #${rn}; rebuilt output copy failed.`);
+            } finally {
+              try {
+                await run("git", ["worktree", "remove", "--force", join(rebuilt.tmpBase, "worktree")]);
+              } catch {
+                // Best effort cleanup.
+              }
+              await rm(rebuilt.tmpBase, {recursive: true, force: true});
+            }
+          } else {
+            log(`Skipping build #${rn}; source rebuild failed.`);
+          }
+        } else {
+          log(`Skipping build #${rn}; no downloadable artifact found.`);
+        }
       }
     }
 
@@ -157,7 +215,7 @@ async function main() {
         sha: rsha,
         created_at: run.created_at,
         available: true,
-        source: "artifact",
+        source: sourceByRun.get(String(rn)) || "artifact",
       });
     }
   }
