@@ -1027,7 +1027,8 @@
                          :let [delta (* dir (nudge-delta cfg-key))]]
                      {:title title
                       :icon (icon color)
-                      :on-click #(nudge! path delta)}))))
+                      :on-click #(nudge! path delta)
+                      :on-drag-step #(nudge! path (* delta %))}))))
            vec))))
 
 (defn nudge-panel [feature]
@@ -1512,6 +1513,7 @@
                                       [(str run_number) (str sha)]))
                                manifest-builds)
         curated (->> builds
+                     (sort-by :build-number >)
                      (map (fn [{:keys [build-number label]}]
                             (let [token (str build-number)
                                   sha (get builds-by-number token)]

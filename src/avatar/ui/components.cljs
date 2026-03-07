@@ -129,24 +129,73 @@
 
 (defn nudge-pad
   [{:keys [rows]}]
-  [:div {:style {:display "grid" :gap 0}}
-   (doall
-    (for [[idx row] (map-indexed vector rows)]
-      ^{:key idx}
-      [:div {:style {:display "flex" :gap 0}}
-       (doall
-        (for [{:keys [title icon on-click selected?]} row]
-          ^{:key title}
-          [:button
-           {:title title
-            :aria-label title
-            :class "w23 h23 w3-ns h3-ns"
-            :style {:display "flex"
-                    :align-items "center"
-                    :justify-content "center"
-                    :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
-                    :background "var(--surface-color)"
-                    :color "var(--icon-color)"
-                    :cursor "pointer"}
-            :on-click on-click}
-           [:div icon]]))]))])
+  (let [drag-step-px 12
+        tap-slop-px 4]
+    [:div {:style {:display "grid" :gap 0}}
+     (doall
+      (for [[idx row] (map-indexed vector rows)]
+        ^{:key idx}
+        [:div {:style {:display "flex" :gap 0}}
+         (doall
+          (for [{:keys [title icon on-click on-drag-step selected?]} row
+                :let [drag-state (volatile! nil)]]
+            ^{:key title}
+            [:button
+             {:title title
+              :aria-label title
+              :class "w23 h23 w3-ns h3-ns"
+              :style {:display "flex"
+                      :align-items "center"
+                      :justify-content "center"
+                      :border (if selected? "2px solid var(--selected-border-color)" "1px solid var(--border-color)")
+                      :background "var(--surface-color)"
+                      :color "var(--icon-color)"
+                      :cursor "pointer"
+                      :touch-action "none"}
+              :on-pointer-down
+              (fn [e]
+                (.preventDefault e)
+                (.setPointerCapture (.-currentTarget e) (.-pointerId e))
+                (vreset! drag-state {:start-x (.-clientX e)
+                                     :start-y (.-clientY e)
+                                     :emitted-steps 0}))
+              :on-pointer-move
+              (fn [e]
+                (when-let [{:keys [start-x start-y emitted-steps]} @drag-state]
+                  (let [dx-signed (- (.-clientX e) start-x)
+                        dx (js/Math.abs dx-signed)
+                        dy (js/Math.abs (- (.-clientY e) start-y))
+                        signed-total-steps (if (neg? dx-signed)
+                                             (- (int (js/Math.floor (/ dx drag-step-px))))
+                                             (int (js/Math.floor (/ dx drag-step-px))))
+                        step-delta (- signed-total-steps emitted-steps)]
+                    (when (not= 0 step-delta)
+                      (if on-drag-step
+                        (on-drag-step step-delta)
+                        (when (pos? step-delta)
+                          (dotimes [_ step-delta]
+                            (on-click))))
+                      (vreset! drag-state {:start-x start-x
+                                           :start-y start-y
+                                           :emitted-steps signed-total-steps})))))
+              :on-pointer-up
+              (fn [e]
+                (when-let [{:keys [start-x start-y emitted-steps]} @drag-state]
+                  (let [dx (js/Math.abs (- (.-clientX e) start-x))
+                        dy (js/Math.abs (- (.-clientY e) start-y))
+                        moved (max dx dy)
+                        dragged? (not= 0 emitted-steps)]
+                    (when (and (not dragged?) (< moved tap-slop-px))
+                      (on-click))))
+                (.releasePointerCapture (.-currentTarget e) (.-pointerId e))
+                (vreset! drag-state nil))
+              :on-pointer-cancel
+              (fn [e]
+                (.releasePointerCapture (.-currentTarget e) (.-pointerId e))
+                (vreset! drag-state nil))
+              :on-key-down
+              (fn [e]
+                (when (#{"Enter" " "} (.-key e))
+                  (.preventDefault e)
+                  (on-click)))}
+             [:div icon]]))]))]))
