@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -32,10 +33,19 @@ jobs:
 
       - run: npm ci
       - run: npm run build
+      - name: Assemble versioned site artifact
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          GITHUB_WORKFLOW_FILE: pages.yml
+          MAX_BUILDS: "30"
+        run: node scripts/assemble-versioned-site.mjs
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: public
+          path: dist-pages
 
   deploy:
     environment:

@@ -180,6 +180,7 @@
 (def feature-button-gap 6)
 (def swatch-button-gap 6)
 (declare color-swatch-button)
+(declare version-switcher)
 
 (defn next-theme-mode [theme-mode]
   (case theme-mode
@@ -1412,7 +1413,9 @@
                                            :show-edn? false
                                            :show-about? false
                                            :show-presets? false)}
-       "Close"]]
+       "Close"]
+      [:div {:class "ma1"}
+       [version-switcher]]]
 
      (when show-presets?
        [presets-panel])
@@ -1476,7 +1479,129 @@
 ;; Root UI
 ;; -------------------------
 
+(defonce version-switch-init? (atom false))
+
+(defn localhost? []
+  (contains? #{"localhost" "127.0.0.1" "::1" "[::1]"}
+             (.-hostname js/location)))
+
+(defn normalize-base-path [raw]
+  (let [trimmed (str/trim (or raw ""))]
+    (if (str/blank? trimmed)
+      "/"
+      (str "/" (str/replace trimmed #"^/+|/+$" "") "/"))))
+
+(defn current-version-token [base-path]
+  (let [pathname (or (.-pathname js/location) "/")
+        rel (if (str/starts-with? pathname base-path)
+              (subs pathname (count base-path))
+              "")
+        first-segment (first (remove str/blank? (str/split rel #"/")))]
+    (or first-segment "")))
+
+(defn version-url [base-path token]
+  (let [base (normalize-base-path base-path)
+        segment (if (str/blank? token) "" (str token "/"))]
+    (str base segment)))
+
+(defn load-version-switcher! []
+  (when-not @version-switch-init?
+    (reset! version-switch-init? true)
+    (if (localhost?)
+      (state/swap-ui! assoc
+                      :versions-loading? false
+                      :versions-options []
+                      :versions-base-path nil
+                      :versions-error? false)
+      (do
+        (state/swap-ui! assoc
+                        :versions-loading? true
+                        :versions-options []
+                        :versions-base-path nil
+                        :versions-error? false)
+        (-> (js/fetch "./versions.json" #js {:cache "no-store"})
+            (.then (fn [response]
+                     (if (.-ok response)
+                       (.json response)
+                       (js/Promise.reject (js/Error. "Failed to load versions.json")))))
+            (.then (fn [payload]
+                     (let [data (js->clj payload :keywordize-keys true)
+                           base-path (normalize-base-path (or (:basePath data) ""))
+                           builds (->> (:builds data)
+                                       (filter map?)
+                                       (map (fn [{:keys [run_number sha]}]
+                                              {:token (str run_number)
+                                               :sha (str sha)
+                                               :label (str "Build #" run_number " (" sha ")")}))
+                                       vec)
+                           options (into [{:token "" :sha "" :label "Latest"}] builds)]
+                       (state/swap-ui! assoc
+                                       :versions-loading? false
+                                       :versions-base-path base-path
+                                       :versions-options options
+                                       :versions-error? false))))
+            (.catch (fn [_]
+                      (state/swap-ui! assoc
+                                      :versions-loading? false
+                                      :versions-options []
+                                      :versions-base-path nil
+                                      :versions-error? true))))))))
+
+(defn version-switcher []
+  (let [{:keys [versions-loading? versions-options versions-base-path]} (state/ui)]
+    (if (localhost?)
+      [:label {:style {:display "flex"
+                       :align-items "center"
+                       :gap 8
+                       :font-size 12}}
+       ;; [:span "Build"]
+       [:select
+        {:disabled true
+         :style {:min-width 188
+                 :height 28
+                 :font-size 12
+                 :border "1px solid var(--border-color)"
+                 :background "var(--surface-color)"
+                 :color "var(--text-color)"
+                 :border-radius 6
+                 :padding "0 8px"
+                 :opacity 0.75}}
+        [:option {:value ""} "Dev mode: no version data"]]]
+      (when (or versions-loading? (seq versions-options))
+        [:label {:style {:display "flex"
+                         :align-items "center"
+                         :gap 8
+                         :font-size 12}}
+         [:span "Build"]
+         (if versions-loading?
+           [:span {:style {:opacity 0.8}} "Loading..."]
+           (let [current-token (current-version-token (or versions-base-path "/"))
+                 matched (some (fn [{:keys [token sha]}]
+                                 (when (or (= current-token token)
+                                           (= current-token sha))
+                                   token))
+                               versions-options)
+                 selected-token (or matched "")]
+             [:select
+              {:value selected-token
+               :style {:min-width 188
+                       :height 28
+                       :font-size 12
+                       :border "1px solid var(--border-color)"
+                       :background "var(--surface-color)"
+                       :color "var(--text-color)"
+                       :border-radius 6
+                       :padding "0 8px"}
+               :on-change (fn [e]
+                            (let [token (.. e -target -value)]
+                              (set! (.-href js/location)
+                                    (version-url versions-base-path token))))}
+              (for [{:keys [token label]} versions-options]
+                ^{:key token}
+                [:option {:value token} label])]))]))))
+
 (defn main-panel []
+  (load-version-switcher!)
   (let [spec (state/spec)
         sections (active-feature-sections spec)
         {:keys [prefix notice shape swatches nudge]} sections]
