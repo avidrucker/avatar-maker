@@ -140,6 +140,7 @@ async function main() {
     .slice(0, maxBuilds);
 
   const builds = [];
+  const diagnostics = [];
   const presentTokens = new Set([String(runNumber), sha7]);
   const sourceByRun = new Map([[String(runNumber), "current"]]);
   let rebuildCount = 0;
@@ -148,6 +149,12 @@ async function main() {
     run_number: runNumber,
     sha: sha7,
     created_at: new Date().toISOString(),
+    available: true,
+    source: "current",
+  });
+  diagnostics.push({
+    run_number: runNumber,
+    sha: sha7,
     available: true,
     source: "current",
   });
@@ -171,8 +178,20 @@ async function main() {
           presentTokens.add(String(rn));
           presentTokens.add(rsha);
           sourceByRun.set(String(rn), "artifact");
+          diagnostics.push({
+            run_number: rn,
+            sha: rsha,
+            available: true,
+            source: "artifact",
+          });
           log(`Backfilled build #${rn}.`);
         } catch {
+          diagnostics.push({
+            run_number: rn,
+            sha: rsha,
+            available: false,
+            reason: "artifact-copy-failed",
+          });
           log(`Skipping build #${rn}; artifact extraction copy failed.`);
         } finally {
           await rm(artifact.tmpBase, {recursive: true, force: true});
@@ -189,8 +208,20 @@ async function main() {
               presentTokens.add(rsha);
               sourceByRun.set(String(rn), "rebuilt");
               rebuildCount += 1;
+              diagnostics.push({
+                run_number: rn,
+                sha: rsha,
+                available: true,
+                source: "rebuilt",
+              });
               log(`Rebuilt and backfilled build #${rn}.`);
             } catch {
+              diagnostics.push({
+                run_number: rn,
+                sha: rsha,
+                available: false,
+                reason: "rebuild-copy-failed",
+              });
               log(`Skipping build #${rn}; rebuilt output copy failed.`);
             } finally {
               try {
@@ -201,9 +232,21 @@ async function main() {
               await rm(rebuilt.tmpBase, {recursive: true, force: true});
             }
           } else {
+            diagnostics.push({
+              run_number: rn,
+              sha: rsha,
+              available: false,
+              reason: "rebuild-failed",
+            });
             log(`Skipping build #${rn}; source rebuild failed.`);
           }
         } else {
+          diagnostics.push({
+            run_number: rn,
+            sha: rsha,
+            available: false,
+            reason: rebuildMissingFromSource ? "rebuild-limit-reached" : "artifact-unavailable",
+          });
           log(`Skipping build #${rn}; no downloadable artifact found.`);
         }
       }
@@ -237,6 +280,13 @@ async function main() {
       sha: sha7,
     },
     builds: deduped,
+    diagnostics: {
+      total_successful_runs_seen: workflowRuns.length,
+      available_count: deduped.length,
+      unavailable: diagnostics
+        .filter((d) => d.available === false)
+        .sort((a, b) => b.run_number - a.run_number),
+    },
   };
 
   await writeFile(join(outDir, "versions.json"), JSON.stringify(manifest, null, 2));
@@ -244,6 +294,19 @@ async function main() {
   await writeFile(
     join(outDir, "version-index.txt"),
     deduped.map((b) => `#${b.run_number}\t${b.sha}\t${b.created_at}`).join("\n") + "\n"
+  );
+
+  await writeFile(
+    join(outDir, "version-diagnostics.txt"),
+    diagnostics
+      .sort((a, b) => b.run_number - a.run_number)
+      .map((d) => {
+        if (d.available) {
+          return `#${d.run_number}\t${d.sha}\tAVAILABLE\t${d.source}`;
+        }
+        return `#${d.run_number}\t${d.sha}\tMISSING\t${d.reason}`;
+      })
+      .join("\n") + "\n"
   );
 
   log(`Assembled ${deduped.length} build entries in ${outDir}/versions.json`);

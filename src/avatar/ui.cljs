@@ -1519,8 +1519,21 @@
                                :label label
                                :available? (boolean sha)})))
                      vec)]
-    (cond-> curated
-      include-latest? (into [{:token "" :sha "" :label (or latest-label "Latest") :available? true}]))))
+    (if include-latest?
+      (into [{:token "" :sha "" :label (or latest-label "Latest") :available? true}] curated)
+      curated)))
+
+(defn selected-version-token [versions-options versions-base-path]
+  (let [current-token (current-version-token (or versions-base-path "/"))
+        current-sha->token (into {}
+                                 (map (fn [{:keys [sha token]}]
+                                        [sha token]))
+                                 versions-options)]
+    (cond
+      (str/blank? current-token) ""
+      (some #(= current-token (:token %)) versions-options) current-token
+      (contains? current-sha->token current-token) (get current-sha->token current-token)
+      :else "")))
 
 (defn load-version-switcher! []
   (when-not @version-switch-init?
@@ -1589,13 +1602,7 @@
          [:span "Build"]
          (if versions-loading?
            [:span {:style {:opacity 0.8}} "Loading..."]
-           (let [current-token (current-version-token (or versions-base-path "/"))
-                 matched (some (fn [{:keys [token sha]}]
-                                 (when (or (= current-token token)
-                                           (= current-token sha))
-                                   token))
-                               versions-options)
-                 selected-token (or matched "")]
+           (let [selected-token (selected-version-token versions-options versions-base-path)]
              [:select
               {:value selected-token
                :style {:min-width 188
