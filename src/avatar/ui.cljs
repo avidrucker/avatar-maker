@@ -3,6 +3,7 @@
             [avatar.render :as render]
             [avatar.storage :as storage]
             [avatar.config :as cfg]
+            [avatar.version :as version]
             [avatar.ui.components :as comp]
             [avatar.icons :as icons]
             [clojure.string :as str]))
@@ -1423,7 +1424,7 @@
      (when show-about?
        [:div {:class "mt3"}
         [:div {:style {:font-size 12 :line-height 1.5}}
-         [:div [:strong "Avatar Maker"] " (v016)"]
+         [:div [:strong "Avatar Maker"] " (" version/current-version ")"]
          [:div "Author: Avi Drucker"]
          [:div "Built with ClojureScript, shadow-cljs, and Reagent."]
          [:div
@@ -1581,7 +1582,7 @@
                        :align-items "center"
                        :gap 8
                        :font-size 12}}
-       ;; [:span "Build"]
+       ;; [:span "Build"] ;; dev mode
        [:select
         {:disabled true
          :style {:min-width 188
@@ -1599,7 +1600,7 @@
                          :align-items "center"
                          :gap 8
                          :font-size 12}}
-         [:span "Build"]
+         ;; [:span "Build"] ;; prod
          (if versions-loading?
            [:span {:style {:opacity 0.8}} "Loading..."]
            (let [selected-token (selected-version-token versions-options versions-base-path)]

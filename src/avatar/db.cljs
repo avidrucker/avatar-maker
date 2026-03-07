@@ -1,5 +1,6 @@
 (ns avatar.db
   (:require [avatar.state :as state]
+            [avatar.version :as version]
             [reagent.core :as r]))
 
 ;; Compatibility cursors into unified app state.
@@ -9,7 +10,7 @@
 (defonce !other-subcategory (r/cursor state/!app [:ui :other-subcategory]))
 
 ;; Persistent/local storage keys
-(def storage-key "mii-svg-avatar/v016")
+(def storage-key (str "mii-svg-avatar/" version/current-version))
 (def show-svg-key "mii-svg-avatar/show-svg")
 (def show-presets-key "mii-svg-avatar/show-presets")
 (def hidden-presets-key "mii-svg-avatar/hidden-presets")

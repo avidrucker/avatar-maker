@@ -1,4 +1,5 @@
-(ns avatar.config)
+(ns avatar.config
+  (:require [avatar.version :as version]))
 
 (def constants
   "Defines UI constraints used by controls."
@@ -34,7 +35,7 @@
   "Curated build list for the footer version dropdown.
    build-number must match GitHub Actions run_number."
   {:include-latest? true
-   :latest-label "Latest"
+   :latest-label (str "Latest (" version/current-version ")")
    :builds [{:build-number 5 :label "v016"}
             {:build-number 12 :label "v017"}
             {:build-number 19 :label "v018"}
