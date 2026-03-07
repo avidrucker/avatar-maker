@@ -56,7 +56,8 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
           GITHUB_WORKFLOW_FILE: pages.yml
-          MAX_BUILDS: "30"
+          MAX_BUILDS: "100"
+          PERSIST_BUILD_NUMBERS: "5,12,19,25"
           REBUILD_MISSING_FROM_SOURCE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.rebuild_missing_from_source || 'false' }}
           MAX_REBUILDS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.max_rebuilds || '0' }}
         run: node scripts/assemble-versioned-site.mjs

@@ -1,4 +1,4 @@
-import {mkdtemp, rm, mkdir, cp, writeFile, readdir} from "node:fs/promises";
+import {mkdtemp, rm, mkdir, cp, writeFile, readdir, lstat} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {execFile} from "node:child_process";
@@ -13,6 +13,7 @@ const {
   GITHUB_RUN_NUMBER,
   GITHUB_WORKFLOW_FILE = "pages.yml",
   MAX_BUILDS = "30",
+  PERSIST_BUILD_NUMBERS = "",
   REBUILD_MISSING_FROM_SOURCE = "false",
   MAX_REBUILDS = "0",
 } = process.env;
@@ -25,6 +26,13 @@ const [owner, repo] = GITHUB_REPOSITORY.split("/");
 const runNumber = Number(GITHUB_RUN_NUMBER);
 const sha7 = GITHUB_SHA.slice(0, 7);
 const maxBuilds = Math.max(1, Number(MAX_BUILDS) || 30);
+const configuredRunNumbers = new Set(
+  String(PERSIST_BUILD_NUMBERS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => /^\d+$/.test(s))
+);
+const persistAllowlistEnabled = configuredRunNumbers.size > 0;
 const rebuildMissingFromSource = REBUILD_MISSING_FROM_SOURCE === "true";
 const maxRebuilds = Math.max(0, Number(MAX_REBUILDS) || 0);
 const srcDir = "public";
@@ -33,6 +41,11 @@ const basePath = `/${repo}/`;
 
 function log(msg) {
   process.stdout.write(`${msg}\n`);
+}
+
+function shouldPersistRunNumber(runNum) {
+  if (!persistAllowlistEnabled) return true;
+  return runNum === runNumber || configuredRunNumbers.has(String(runNum));
 }
 
 async function gh(path) {
@@ -102,6 +115,45 @@ async function downloadRunArtifact(runId) {
   return {tmpBase, extractDir};
 }
 
+async function seedFromPreviousDeployment(currentRunNumber) {
+  const runsResponse = await gh(
+    `/repos/${owner}/${repo}/actions/workflows/${encodeURIComponent(GITHUB_WORKFLOW_FILE)}/runs?branch=main&status=success&per_page=30`
+  );
+  const previousRuns = (runsResponse.workflow_runs || [])
+    .filter((r) => Number(r.run_number) < currentRunNumber)
+    .sort((a, b) => b.run_number - a.run_number);
+
+  for (const run of previousRuns) {
+    const artifact = await downloadRunArtifact(run.id);
+    if (!artifact?.extractDir) continue;
+    try {
+      await copyDirContents(artifact.extractDir, outDir);
+      return {seeded: true, fromRun: Number(run.run_number), tmpBase: artifact.tmpBase};
+    } catch {
+      await rm(artifact.tmpBase, {recursive: true, force: true});
+    }
+  }
+  return {seeded: false, fromRun: null, tmpBase: null};
+}
+
+async function pruneVersionDirs(allowedTokens) {
+  const entries = await readdir(outDir);
+  for (const entry of entries) {
+    const fullPath = join(outDir, entry);
+    let isDir = false;
+    try {
+      isDir = (await lstat(fullPath)).isDirectory();
+    } catch {
+      isDir = false;
+    }
+    if (!isDir) continue;
+    const looksLikeVersionDir = /^\d+$/.test(entry) || /^[0-9a-f]{7}$/i.test(entry);
+    if (looksLikeVersionDir && !allowedTokens.has(entry)) {
+      await rm(fullPath, {recursive: true, force: true});
+    }
+  }
+}
+
 async function rebuildRunFromSource(headSha) {
   const tmpBase = await mkdtemp(join(tmpdir(), "avatar-rebuild-"));
   const worktreeDir = join(tmpBase, "worktree");
@@ -126,6 +178,16 @@ async function main() {
   await rm(outDir, {recursive: true, force: true});
   await mkdir(outDir, {recursive: true});
 
+  const seed = await seedFromPreviousDeployment(runNumber);
+  if (seed.seeded) {
+    log(`Seeded ${outDir} from previous deployed artifact (run #${seed.fromRun}).`);
+    if (seed.tmpBase) {
+      await rm(seed.tmpBase, {recursive: true, force: true});
+    }
+  } else {
+    log("No previous deployment artifact available for seed step.");
+  }
+
   log("Copying latest build to root and version aliases...");
   await copyPublicTo(outDir);
   await copyPublicTo(join(outDir, String(runNumber)));
@@ -136,14 +198,29 @@ async function main() {
   );
   const workflowRuns = (runsResponse.workflow_runs || [])
     .filter((r) => r.conclusion === "success")
+    .filter((r) => shouldPersistRunNumber(Number(r.run_number)))
     .sort((a, b) => b.run_number - a.run_number)
     .slice(0, maxBuilds);
 
   const builds = [];
   const diagnostics = [];
-  const presentTokens = new Set([String(runNumber), sha7]);
+  const presentTokens = new Set();
   const sourceByRun = new Map([[String(runNumber), "current"]]);
   let rebuildCount = 0;
+
+  const outEntries = await readdir(outDir);
+  for (const entry of outEntries) {
+    const fullPath = join(outDir, entry);
+    try {
+      const st = await lstat(fullPath);
+      if (!st.isDirectory()) continue;
+      if (/^\d+$/.test(entry) || /^[0-9a-f]{7}$/i.test(entry)) {
+        presentTokens.add(entry);
+      }
+    } catch {
+      // Ignore unreadable entry.
+    }
+  }
 
   builds.push({
     run_number: runNumber,
@@ -272,6 +349,13 @@ async function main() {
     ).values()
   );
 
+  const tokensToKeep = new Set([String(runNumber), sha7]);
+  for (const b of deduped) {
+    tokensToKeep.add(String(b.run_number));
+    tokensToKeep.add(String(b.sha));
+  }
+  await pruneVersionDirs(tokensToKeep);
+
   const manifest = {
     basePath,
     generatedAt: new Date().toISOString(),
@@ -281,6 +365,9 @@ async function main() {
     },
     builds: deduped,
     diagnostics: {
+      seeded_from_previous_run: seed.fromRun,
+      persist_allowlist_enabled: persistAllowlistEnabled,
+      persist_allowlist_runs: Array.from(configuredRunNumbers).sort((a, b) => Number(a) - Number(b)),
       total_successful_runs_seen: workflowRuns.length,
       available_count: deduped.length,
       unavailable: diagnostics
