@@ -16,8 +16,15 @@
     <div id="app"></div>
     <script src="./js/main.js"></script>
     <script>
+    const isLocalhost = ["localhost", "127.0.0.1", "::1", "[::1]"]
+      .includes(window.location.hostname);
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", async () => {
+        if (isLocalhost) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map((r) => r.unregister()));
+          return;
+        }
         const reg = await navigator.serviceWorker.register("./sw.js?v=3", {
           updateViaCache: "none"
         });
