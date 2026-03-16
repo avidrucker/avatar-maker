@@ -1506,12 +1506,13 @@
         segment (if (str/blank? token) "" (str token "/"))]
     (str base segment)))
 
-(defn curated-version-options [manifest-builds]
+(defn curated-version-options [manifest-builds latest-run-number latest-sha]
   (let [{:keys [include-latest? latest-label builds]} cfg/version-switcher-config
         builds-by-number (into {}
                                (map (fn [{:keys [run_number sha]}]
                                       [(str run_number) (str sha)]))
                                manifest-builds)
+        latest-token (some-> latest-run-number str)
         curated (->> builds
                      (sort-by :build-number >)
                      (map (fn [{:keys [build-number label]}]
@@ -1523,11 +1524,19 @@
                                :available? (boolean sha)})))
                      vec)]
     (if include-latest?
-      (into [{:token "" :sha "" :label (or latest-label "Latest") :available? true}] curated)
+      (into [{:token latest-token
+              :sha (or latest-sha "")
+              :label (or latest-label "Latest")
+              :available? (boolean latest-token)
+              :latest? true}]
+            curated)
       curated)))
 
 (defn selected-version-token [versions-options versions-base-path]
   (let [current-token (current-version-token (or versions-base-path "/"))
+        latest-token (some->> versions-options
+                              (some (fn [{:keys [latest? token]}]
+                                      (when latest? token))))
         current-sha->token (into {}
                                  (map (fn [{:keys [sha token]}]
                                         [sha token]))
@@ -1536,7 +1545,7 @@
       (str/blank? current-token) ""
       (some #(= current-token (:token %)) versions-options) current-token
       (contains? current-sha->token current-token) (get current-sha->token current-token)
-      :else "")))
+      :else (or latest-token ""))))
 
 (defn load-version-switcher! []
   (when-not @version-switch-init?
@@ -1561,10 +1570,12 @@
             (.then (fn [payload]
                      (let [data (js->clj payload :keywordize-keys true)
                            base-path (normalize-base-path (or (:basePath data) ""))
+                           latest-run-number (get-in data [:latest :run_number])
+                           latest-sha (get-in data [:latest :sha])
                            manifest-builds (->> (:builds data)
                                                 (filter map?)
                                                 vec)
-                           options (curated-version-options manifest-builds)]
+                           options (curated-version-options manifest-builds latest-run-number latest-sha)]
                        (state/swap-ui! assoc
                                        :versions-loading? false
                                        :versions-base-path base-path
@@ -1618,8 +1629,13 @@
                        :padding "0 8px"}
                :on-change (fn [e]
                             (let [token (.. e -target -value)]
-                              (set! (.-href js/location)
-                                    (version-url versions-base-path token))))}
+                              (when-not (str/blank? token)
+                                (set! (.-href js/location)
+                                      (version-url versions-base-path token)))))}
+              (when (str/blank? selected-token)
+                [:option {:value ""
+                          :hidden true}
+                 (or (:latest-label cfg/version-switcher-config) "Latest")])
               (for [{:keys [token label available?]} versions-options]
                 ^{:key token}
                 [:option {:value token
