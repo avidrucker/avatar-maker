@@ -1642,7 +1642,7 @@
       [feature-tab-buttons-row]]
 
      [:div
-      {:class "flex flex-column flex-row-ns items-start justify-center-ns"}
+      {:class "flex flex-column flex-row-ns items-stretch-ns justify-center-ns"}
 
       [:div
        {:class "avatar-preview-container themed-panel relative w-100 w-50-ns measure-narrow mr-auto ml-auto br3 mb2 mb0-ns mr2-ns ml0-ns"
@@ -1654,7 +1654,7 @@
         [avatar-name-editor spec]]] 
 
       [:div
-       {:class "mobile-subpanel-container themed-panel w-100 flex-ns flex-column br3 pa2 mr-auto ml-auto mr0-ns ml0-ns"}
+       {:class "mobile-subpanel-container themed-panel w-100 self-stretch-ns flex-ns flex-column flex-auto-ns br3 pa2 mr-auto ml-auto mr0-ns ml0-ns"}
        [:div {:class "mobile-tabbed-subpanel"}
         (when prefix
           [:div prefix])
@@ -1667,7 +1667,7 @@
            (mobile-active-subpanel-content sections)])]
 
        [:div
-        {:class "horizontal-tab-container controls-layout measure flex flex-wrap items-start justify-start-ns justify-center mr-auto ml-auto mr0-ns ml0-ns"}
+        {:class "horizontal-tab-container controls-layout measure flex flex-wrap items-start justify-start-ns justify-center flex-auto-ns mr-auto ml-auto mr0-ns ml0-ns"}
         (when prefix
           [:div {:class "w-100 w-auto-ns"} prefix])
         (when notice
